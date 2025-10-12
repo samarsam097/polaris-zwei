@@ -1,0 +1,19 @@
+<svg width="100%" height="100%" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="800" height="600" fill="#000000"/>
+<g opacity="0.6" stroke="#FFFFFF" stroke-width="0.5">
+<path d="M400 0V600"/>
+<path d="M0 300H800"/>
+<path d="M100 0L700 600"/>
+<path d="M700 0L100 600"/>
+<path d="M0 150L800 450"/>
+<path d="M800 150L0 450"/>
+<path d="M200 0L600 600"/>
+<path d="M600 0L200 600"/>
+<path d="M400 0L0 300"/>
+<path d="M400 0L800 300"/>
+<path d="M400 600L0 300"/>
+<path d="M400 600L800 300"/>
+<path d="M150 600L250 0"/>
+<path d="M650 600L550 0"/>
+</g>
+</svg>
