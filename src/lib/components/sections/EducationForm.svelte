@@ -42,7 +42,10 @@
 <style>
 		.start, .end{
 
-				width:47%;
+				width:46.8%;
+		}
+		input{
+				height:27px;
 		}
 		h3{color:darkgrey}
 			.list-entry {
@@ -50,9 +53,10 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		padding: 1rem;
-					margin-bottom: 5px;
+					margin-bottom: 10px;
 		border: 1px solid #e0e0e0;
 		border-radius: 6px;
+
 	}
 			.add-btn, .delete-btn {
 		padding: 0 1rem;
@@ -63,6 +67,7 @@
 		color: white;
 		border-radius: 4px;
 		cursor: pointer;
+					height:27px;
 	}
 	/* Styles for .form-section, .list-entry, input, .add-btn, .delete-btn, etc. */
 </style>

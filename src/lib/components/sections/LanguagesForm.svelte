@@ -47,14 +47,17 @@
 </div>
 
 <style>
+		button{
+				height:27px;
+		}
 		.form-section{
 				display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		padding: 1rem;
+		padding: 0.5rem;
 		border: 1px solid #e0e0e0;
 		border-radius: 6px;
-				margin-bottom: 5px;
+				margin-bottom: 10px;
 		}
 		h3{
 				color:darkgrey;
@@ -72,6 +75,9 @@
 
 
 				margin-bottom: 5px;
+		}
+		input{
+				height:27px;
 		}
 	/* ... styles for .skill-input-group, .skill-tags, etc. ... */
 </style>

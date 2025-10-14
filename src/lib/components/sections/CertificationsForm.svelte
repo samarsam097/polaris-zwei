@@ -31,6 +31,9 @@
 </div>
 
 <style>
+		input{
+				height:27px;
+		}
 		.list-entry{
 				display: flex;
 		flex-direction: column;
@@ -38,7 +41,7 @@
 		padding: 1rem;
 		border: 1px solid #e0e0e0;
 		border-radius: 6px;
-				margin-bottom: 5px;
+				margin-bottom: 10px;
 		}
 		h3{
 				color:darkgrey;
@@ -52,6 +55,7 @@
 		color: white;
 		border-radius: 4px;
 		cursor: pointer;
+				height:27px;
 	}
 	/* ... styles for .form-section, .list-entry, etc. ... */
 </style>

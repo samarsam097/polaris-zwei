@@ -38,9 +38,17 @@
 				{#if $resumeData.basicInfo.website}
 					<span>• {$resumeData.basicInfo.website}</span>
 				{/if}
+				{#if $resumeData.customFields}
+					{#each $resumeData.customFields as field}
+						{#if field.label && field.value}
+							<span>• {field.label}: {field.value}</span>
+						{/if}
+					{/each}
+				{/if}
 			</div>
 		</div>
 	</header>
+
 	{#if $resumeData.summary}
 		<section class="resume-section">
 			<h2>Summary</h2>
@@ -48,7 +56,7 @@
 		</section>
 	{/if}
 
-	{#if $resumeData.workExperience.length > 0}
+	{#if $resumeData.workExperience?.length > 0}
 		<section class="resume-section">
 			<h2>Work Experience</h2>
 			{#each $resumeData.workExperience as experience}
@@ -56,16 +64,18 @@
 					<h4>{experience.role}</h4>
 					<p><strong>{experience.company}</strong></p>
 					<ul class="summary-list">
-						{#each experience.summary.split('•').slice(1) as data}
-							<li>{data.trim()}</li>
-						{/each}
+						{#if experience.summary}
+							{#each experience.summary.split('•').slice(1) as data}
+								<li>{data.trim()}</li>
+							{/each}
+						{/if}
 					</ul>
 				</div>
 			{/each}
 		</section>
 	{/if}
 
-	{#if $resumeData.skills.length > 0}
+	{#if $resumeData.skills?.length > 0}
 		<section class="resume-section">
 			<h2>Skills</h2>
 			<div class="skill-pills">
@@ -76,7 +86,7 @@
 		</section>
 	{/if}
 
-	{#if $resumeData.education.length > 0}
+	{#if $resumeData.education?.length > 0}
 		<section class="resume-section">
 			<h2>Education</h2>
 			{#each $resumeData.education as entry}
@@ -89,7 +99,7 @@
 		</section>
 	{/if}
 
-	{#if $resumeData.projects.length > 0}
+	{#if $resumeData.projects?.length > 0}
 		<section class="resume-section">
 			<h2>Projects</h2>
 			{#each $resumeData.projects as project}
@@ -115,7 +125,7 @@
 		</section>
 	{/if}
 
-	{#if $resumeData.certifications.length > 0}
+	{#if $resumeData.certifications?.length > 0}
 		<section class="resume-section">
 			<h2>Certifications</h2>
 			{#each $resumeData.certifications as cert}
@@ -126,7 +136,7 @@
 		</section>
 	{/if}
 
-	{#if $resumeData.languages.length > 0}
+	{#if $resumeData.languages?.length > 0}
 		<section class="resume-section">
 			<h2>Languages</h2>
 			<div class="skill-pills">
@@ -136,28 +146,26 @@
 			</div>
 		</section>
 	{/if}
-	{#each $resumeData.customFields as field}
-		{#if field.label && field.value}
-			<span>• {field.label}: {field.value}</span>
-		{/if}
-	{/each}
 </div>
 
 <style>
 	.resume-paper {
 		background: white;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		margin: 2rem auto; /* Corrected CSS syntax */
 		padding: 2rem;
-		font-family: 'Helvetica Neue', Arial, sans-serif;
+		overflow-wrap: break-word;
 		transition: all 0.3s ease;
-			width: 794px; /* Pixel equivalent of A4 width at 96 DPI */
-	min-height: 1123px; /* Pixel equivalent of A4 height */
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* A soft shadow for a floating effect */
-	margin: 0 auto;
+		width: 650px;
+		min-height: 920px; /* Corrected CSS syntax */
+		position: relative;
 	}
 
+	/* --- ALL YOUR OTHER STYLES --- */
 	h1,
 	h2,
-	h4 {
+	h4,
+	p {
 		margin: 4px 0;
 	}
 
@@ -169,23 +177,22 @@
 		margin-top: 1rem;
 	}
 
-	/* --- START: UPDATED HEADER STYLES --- */
 	.resume-header {
-		display: flex; /* Use Flexbox for side-by-side layout */
-		align-items: center; /* Vertically align photo and text */
-		gap: 1.5rem; /* Space between photo and text */
-		text-align: left; /* Revert from center to left alignment */
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+		text-align: left;
 		margin-bottom: 1.5rem;
 	}
 
 	.header-text {
-		flex-grow: 1; /* Allows text block to take up the remaining space */
+		flex-grow: 1;
 	}
 
 	.contact-info {
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: flex-start; /* Align contact info to the left */
+		justify-content: flex-start;
 		gap: 0.5rem;
 		font-size: 0.9rem;
 	}
@@ -193,20 +200,17 @@
 	.profile-photo {
 		width: 100px;
 		height: 100px;
-		object-fit: cover; /* Prevents the image from being stretched */
+		object-fit: cover;
 	}
 
 	.profile-photo.circle {
-		border-radius:50%;
+		border-radius: 50%;
 	}
 
 	.profile-photo.square {
-		border-radius: 0; /* A slight radius for a modern square look */
+		border-radius: 4px;
 	}
-	/* --- END: UPDATED HEADER STYLES --- */
 
-
-	/* --- THEME DEFINITIONS --- */
 	.theme-classic {
 		font-family: Arial, sans-serif;
 		color: #000000;
@@ -214,12 +218,10 @@
 	.theme-classic h1 {
 		font-size: 24pt;
 		font-weight: bold;
-		color: #000000;
 	}
 	.theme-classic h2 {
 		font-size: 14pt;
 		font-weight: bold;
-		color: #000000;
 		border-bottom: 1px solid #000000;
 		padding-bottom: 4px;
 		margin-top: 1rem;
@@ -231,14 +233,13 @@
 		font-size: 10pt;
 	}
 
-	/* Modern Theme */
 	.theme-modern {
 		font-family: 'Inter', sans-serif;
 	}
 	.theme-modern h1 {
 		font-size: 2.2rem;
 		color: #0055a5;
-		text-align: left; /* Changed from center */
+		text-align: left;
 	}
 	.theme-modern h2 {
 		color: #0055a5;
@@ -247,14 +248,13 @@
 		padding-left: 8px;
 	}
 
-	/* Elegant Theme */
 	.theme-elegant {
 		font-family: 'Georgia', serif;
 	}
 	.theme-elegant h1 {
 		font-weight: normal;
 		font-style: italic;
-		text-align: left; /* Changed from center */
+		text-align: left;
 		color: #4a4a4a;
 	}
 	.theme-elegant h2 {

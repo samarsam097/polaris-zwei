@@ -99,6 +99,7 @@
 		color: white;
 		border-radius: 4px;
 		cursor: pointer;
+				height:27px;
 	}
 	.form-section {
 		display: flex;
@@ -126,8 +127,8 @@
 	.ai-controls input {
 		flex-grow: 1;
 	}
-	.delete-btn, .add-btn {
-		/* Add your button styles here */
+	input{
+			height:27px;
 	}
 	h3{
 			color: darkgrey;

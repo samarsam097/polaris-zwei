@@ -14,37 +14,29 @@
 		}
 	}
 
-	// --- NEW FUNCTION TO DELETE THE PHOTO ---
 	function deletePhoto() {
-		// Set the photo string back to empty
 		$resumeData.basicInfo.photo = '';
-
-		// Optional: Clear the file input visually
 		const fileInput = document.getElementById('photo') as HTMLInputElement;
-		if (fileInput) {
-			fileInput.value = '';
-		}
+		if (fileInput) fileInput.value = '';
 	}
 </script>
 
 <div class="form-section">
 	<h3>Basic Info</h3>
-    <label for="photo">Profile Photo</label>
+
+	<!-- The redundant #if block has been removed, so this always shows now -->
+	<label for="photo" class="foto">Profile Photo</label>
 	<input type="file" id="photo" accept="image/png, image/jpeg" on:change={handlePhotoUpload} />
 
 	{#if $resumeData.basicInfo.photo}
-		<div class="shape-selector">
-			<label>Photo Shape:</label>
-			<label>
-				<input type="radio" value="circle" bind:group={$resumeData.basicInfo.photoShape} />
-				Circle
-			</label>
-			<label>
-				<input type="radio" value="square" bind:group={$resumeData.basicInfo.photoShape} />
-				Square
-			</label>
+		<div class="photo-options">
+			<div class="shape-selector">
+				<label>Shape:</label>
+				<label><input type="radio" value="circle" bind:group={$resumeData.basicInfo.photoShape} /> Circle</label>
+				<label><input type="radio" value="square" bind:group={$resumeData.basicInfo.photoShape} /> Square</label>
+			</div>
+			<button class="delete-photo-btn" on:click={deletePhoto}>Delete</button>
 		</div>
-		<button class="delete-photo-btn" on:click={deletePhoto}>Delete Photo</button>
 	{/if}
 
 	<p class="ats-warning">
@@ -65,27 +57,43 @@
 
 	<label for="website">Website / Portfolio</label>
 	<input type="url" id="website" bind:value={$resumeData.basicInfo.website} />
-
 </div>
 
+
 <style>
-    input{
-        width: 100%;
-    }
+	/* All your existing styles for the form are correct */
 	.form-section {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-      width: 100%;
 	}
 	label {
 		font-weight: bold;
+		margin-top: 0.75rem;
+	}
+	.photo-options {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
 		margin-top: 0.5rem;
 	}
-	input {
-		width: 100%;
-		padding: 8px;
+	.shape-selector {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+	.shape-selector label {
+		margin-top: 0;
+		font-weight: normal;
+	}
+	.delete-photo-btn {
+		background-color: #f44336;
+		color: white;
+		border: none;
+		padding: 6px 12px;
 		border-radius: 4px;
+		cursor: pointer;
 	}
 	.ats-warning {
 		font-size: 0.8rem;
@@ -95,31 +103,10 @@
 		padding: 0.5rem;
 		border-radius: 4px;
 	}
-
-	/* --- NEW: STYLE FOR THE DELETE BUTTON --- */
-	.delete-photo-btn {
-		background-color: #f44336; /* Red for a delete action */
-		color: white;
-		border: none;
-		padding: 8px;
-		border-radius: 4px;
-		cursor: pointer;
-		margin-top: 0.5rem;
+	h3{
+			color:white;
 	}
-  h3,label{
-      color:darkgrey;
-  }
-  .shape-selector {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		margin-top: 0.5rem;
+	label{
+			color: darkgrey;
 	}
-	.shape-selector label {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-		font-weight: normal; /* Override the default bold label */
-	}
-
 </style>

@@ -1,1 +1,10 @@
-@import 'tailwindcss';
+global(body){
+margin: 0;
+  padding: 0;
+}
+@font-face {
+  font-family: 'DMSans';
+  src: url('/fonts/DMSans-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

@@ -51,8 +51,13 @@
 
 <style>
     textarea{
-        max-height: 60px;
+
+        max-height: 100px;
         width: 100%;
+
+    }
+    input{
+        height:27px;
     }
     .form-section {
         display: flex;
@@ -68,7 +73,7 @@
     }
     input, textarea {
         width: 100%;
-        padding: 8px;
+        padding: 0px;
         border: 1px solid #ccc;
         border-radius: 4px;
     }

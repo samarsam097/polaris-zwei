@@ -106,7 +106,7 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		padding: 1rem;
-					margin-bottom: 5px;
+					margin-bottom: 10px;
 		border: 1px solid #e0e0e0;
 		border-radius: 6px;
 	}
@@ -119,6 +119,7 @@
 		color: white;
 		border-radius: 4px;
 		cursor: pointer;
+				height:27px;
 	}
 	/* ... existing styles ... */
 	.ai-controls {
@@ -143,5 +144,8 @@
 	}
 	h3{
 			color:darkgrey;
+	}
+	input{
+			height:27px;
 	}
 </style>
