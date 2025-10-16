@@ -21,7 +21,12 @@
 </script>
 
 {#if open}
-	<div class="modal-backdrop" on:click={() => dispatch('close')} />
+	<div
+  class="modal-backdrop"
+  on:click={() => dispatch('close')}
+  role="button"
+  tabindex="0"
+/>
 	<div class="modal-content" transition:fly={{ duration: 300, y: 20 }}>
 		<header class="modal-header">
 			<h2>Create Your Account</h2>

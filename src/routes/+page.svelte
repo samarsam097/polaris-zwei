@@ -100,7 +100,7 @@ async function handleEmailSignUp(event: CustomEvent) {
 </svelte:head>
 
 <div class="homepage">
-	<div class="background-image" />
+	<div class="background-image" ></div>
 	<div class="content">
 		<h1>Craft Your Future</h1>
 		<p>Build a professional, ATS-friendly resume in minutes. Create, customize, and download with ease.</p>
@@ -181,27 +181,7 @@ async function handleEmailSignUp(event: CustomEvent) {
 		margin: 0 auto;
 	}
 
-	.google-btn {
-		margin-top: 2.5rem;
-		padding: 0.75rem 1.5rem;
-		font-size: 1rem;
-		background-color: #ffffff;
-		color: #111;
-		border: 1px solid #ddd;
-		border-radius: 8px;
-		cursor: pointer;
-		font-weight: 500;
-		transition: all 0.2s ease;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.75rem;
-		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-	}
 
-	.google-btn:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-	}
 	.sign-in-btn {
 		margin-top: 2.5rem;
 		padding: 1rem 2.5rem;

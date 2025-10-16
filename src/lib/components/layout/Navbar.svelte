@@ -117,7 +117,7 @@
 						<div class="dropdown-menu">
 							<a href="/dashboard" class="dropdown-item">Dashboard</a>
 							<button on:click={openSettings} class="dropdown-item">Settings</button>
-							<div class="separator" />
+							<div class="separator" ></div>
 							<button on:click={signOut} class="dropdown-item">Sign Out</button>
 						</div>
 					{/if}

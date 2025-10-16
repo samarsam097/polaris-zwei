@@ -1,71 +1,58 @@
 <script lang="ts">
 	import { resumeData } from '$lib/resumeStore';
 	import { get } from 'svelte/store';
-	import { onMount } from 'svelte';
+	import type { SupabaseClient } from '@supabase/supabase-js';
+
+	// 1. Import the libraries directly
 	import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+	import html2canvas from 'html2canvas';
 
 	export let resumeId: string;
-	export let supabase: any;
+	export let supabase: SupabaseClient;
 
-	let html2pdf: any;
 	let isDownloading = false;
 	let isSaving = false;
 
-	onMount(async () => {
+	async function downloadPDF() {
+		if (isDownloading) return;
+		isDownloading = true;
+
 		try {
-			const module = await import('html2pdf.js');
-			html2pdf = module.default;
+			// 2. Find the single, continuous content element.
+			const element = document.getElementById('resume-preview-paper');
+			if (!element) throw new Error('Resume content element not found!');
+
+			const filename = `${get(resumeData).basicInfo.name.replace(/ /g, '_')}_Resume.pdf`;
+
+			// 3. Use html2canvas to take a high-quality "screenshot".
+			const canvas = await html2canvas(element, {
+				scale: 2, // Take screenshot at 2x resolution for sharpness
+				useCORS: true
+			});
+
+			const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+			// 4. Create a new PDF with a custom size that perfectly matches the screenshot.
+			// We use 'px' as the unit for a direct 1:1 mapping.
+			const pdf = new jsPDF({
+				orientation: 'portrait',
+				unit: 'px',
+				format: [canvas.width, canvas.height] // format: [width, height]
+			});
+
+			// 5. Add the screenshot to the PDF, covering the entire page.
+			pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+
+			// 6. Save the PDF.
+			pdf.save(filename);
+
 		} catch (error) {
-			console.error('Failed to load html2pdf.js library', error);
+			console.error('Failed to generate PDF:', error);
+			alert('Sorry, an error occurred while generating the PDF.');
+		} finally {
+			isDownloading = false;
 		}
-	});
-
-// In src/lib/components/layout/ExportControls.svelte
-
-async function downloadPDF() {
-	if (isDownloading) return;
-	isDownloading = true;
-
-	try {
-		// 1. Find the single, continuous content element.
-		const element = document.getElementById('resume-preview-paper');
-		if (!element) throw new Error('Resume content element not found!');
-
-		const filename = `${get(resumeData).basicInfo.name.replace(/ /g, '_')}_Resume.pdf`;
-
-		// 2. Use html2canvas to take a high-quality screenshot.
-		const canvas = await html2canvas(element, {
-			scale: 2, // Render at 2x resolution for sharpness
-			useCORS: true // Allows loading external images/fonts
-		});
-
-		// 3. Get the dimensions of the captured image.
-		const imgData = canvas.toDataURL('image/jpeg', 0.98);
-		const imgWidth = canvas.width;
-		const imgHeight = canvas.height;
-
-		// 4. Create a new PDF with a custom size that matches the image.
-		// We convert pixel dimensions to points (1px = 0.75pt).
-		const pdf = new jsPDF({
-			orientation: 'p', // portrait
-			unit: 'pt', // use points
-			format: [imgWidth * 0.75, imgHeight * 0.75] // [width, height]
-		});
-
-		// 5. Add the screenshot image to the PDF, covering the entire page.
-		pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth * 0.75, imgHeight * 0.75);
-
-		// 6. Save the PDF.
-		pdf.save(filename);
-
-	} catch (error) {
-		console.error('Failed to generate PDF:', error);
-		alert('Sorry, an error occurred while generating the PDF.');
-	} finally {
-		isDownloading = false;
 	}
-}
 
 	async function saveResume() {
 		if (isSaving || !resumeId) return;
@@ -87,46 +74,57 @@ async function downloadPDF() {
 	}
 </script>
 
-<div class="export-controls">
-	<button class="save-btn" on:click={saveResume} disabled={isSaving}>
-		{isSaving ? 'Saving...' : 'Save Resume'}
+<div class="action-bar">
+	<button class="icon-btn" on:click={saveResume} disabled={isSaving} title="Save Resume">
+		<img src="/icons/save.svg" alt="Save" />
 	</button>
-	<button class="download-btn" on:click={downloadPDF} disabled={isDownloading}>
-		{isDownloading ? 'Generating...' : 'Download as PDF'}
+	<button class="icon-btn" on:click={downloadPDF} disabled={isDownloading} title="Download as PDF">
+		<img src="/icons/download.svg" alt="Download" />
 	</button>
 </div>
 
-<!-- All your styles are preserved exactly as you provided them -->
 <style>
-	.export-controls {
-		padding: 1.5rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-	button {
-		width: 100%;
-		padding: 12px;
-		border: none;
-		border-radius: 6px;
-		font-size: 1rem;
-		font-weight: bold;
-		cursor: pointer;
-		transition: background-color 0.2s;
-	}
-	.save-btn {
-		background-color: #007bff; /* Blue */
-		color: white;
-	}
-	.download-btn {
-		background-color: #4caf50; /* Green */
-		color: white;
-	}
-	button:disabled {
-		background-color: #9ca3af;
-		cursor: not-allowed;
-	}
-	button:hover:not(:disabled) {
-		filter: brightness(90%);
-	}
+  .action-bar {
+    width: fit-content;
+			align-self: center;
+			position: sticky; /* The magic property */
+  top: 0;           /* Sticks to the top of the viewport when you scroll past it */
+  z-index: 100;
+    /* --- STYLING (remains the same) --- */
+    display: flex;
+    gap: 0.5rem;
+    background-color: #2d3748;
+    padding: 0.5rem;
+    border-radius: 9999px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid #4a5568;
+  }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    background-color: transparent;
+  }
+
+  .icon-btn img {
+    width: 20px;
+    height: 20px;
+    filter: invert(1); /* Makes the black SVG icons white */
+  }
+
+  .icon-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .icon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 </style>

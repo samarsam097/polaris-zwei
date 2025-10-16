@@ -74,14 +74,13 @@
 			<LanguagesForm />
 			<CustomFieldsForm />
 		</div>
-		<div class="left-sidebar-footer">
-			<!-- 3. Pass the resumeId AND supabase client down to the footer -->
-			<ExportControls {resumeId} {supabase} />
-		</div>
+
 		<main class="resume-preview">
+			<ExportControls {resumeId} {supabase} />
 			<ResumePreview />
 		</main>
 		<aside class="right-sidebar">
+
 			<RightSidebar />
 		</aside>
 	</div>
@@ -110,6 +109,7 @@
 
     /* 3. Adjust the middle column (the "desk") to be the main print area */
     .resume-preview {
+				position: relative !important;
         width: 100%;
         margin: 0;
         padding: 0;
