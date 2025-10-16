@@ -108,23 +108,10 @@
     }
 
     /* 3. Adjust the middle column (the "desk") to be the main print area */
-    .resume-preview {
-				position: relative !important;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        box-shadow: none !important;
-        overflow: visible !important;
-        height: auto !important;
-        background-color: white !important;
-    }
+
 
     /* 4. Ensure the resume paper itself has no margins or shadows */
-    .resume-paper {
-        margin: 0 auto !important;
-        box-shadow: none !important;
-        width: 100%;
-    }
+
 }
 	.loading-container {
 		display: flex;
@@ -161,6 +148,7 @@
 		overflow-y: auto;
 		background-color: #e5e7eb;
 		padding: 2rem;
+			position: relative !important;
 	}
 	.right-sidebar {
 		grid-area: right;
