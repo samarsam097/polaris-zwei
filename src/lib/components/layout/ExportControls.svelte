@@ -3,9 +3,11 @@
   import { onMount, onDestroy } from 'svelte';
   import { resumeData } from '$lib/resumeStore';
   import { get } from 'svelte/store';
+  import { fade } from 'svelte/transition';
   import type { SupabaseClient } from '@supabase/supabase-js';
   import jsPDF from 'jspdf';
   import html2canvas from 'html2canvas';
+  import Popup from '$lib/components/ui/Popup.svelte';
 
   // --- PROPS ---
   export let resumeId: string;
@@ -16,6 +18,9 @@
   let isDownloading = false;
   let isSaving = false;
   let containerNode: HTMLElement; // A reference to the main container div to detect outside clicks
+  let showPopup = false;
+  let popupMessage = '';
+  let popupType: 'success' | 'error' = 'success';
 
   // --- HANDLERS ---
   function toggleMenu() {
@@ -24,6 +29,13 @@
 
   function closeMenu() {
     isMenuOpen = false;
+  }
+
+  function triggerPopup(message: string, type: 'success' | 'error', duration = 3000) {
+    popupMessage = message;
+    popupType = type;
+    showPopup = true;
+    setTimeout(() => (showPopup = false), duration);
   }
 
   // This function checks if a click happened outside the component's main element
@@ -63,9 +75,10 @@
       });
       pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
       pdf.save(filename);
+      triggerPopup('Downloaded successfully!', 'success');
     } catch (error) {
       console.error('Failed to generate PDF:', error);
-      alert('Sorry, an error occurred while generating the PDF.');
+      triggerPopup('Download failed.', 'error');
     } finally {
       isDownloading = false;
     }
@@ -83,10 +96,10 @@
         .update({ data: currentData, updated_at: new Date().toISOString() })
         .eq('id', resumeId);
       if (error) throw error;
-      alert('Resume saved successfully!');
+      triggerPopup('Saved successfully!', 'success');
     } catch (error) {
       console.error('Error saving resume:', error);
-      alert('Could not save the resume. Please try again.');
+      triggerPopup('Save failed.', 'error');
     } finally {
       isSaving = false;
     }
@@ -99,7 +112,7 @@
   </button>
 
   {#if isMenuOpen}
-    <div class="dropdown-menu">
+    <div class="dropdown-menu" transition:fade={{ duration: 150 }}>
       <button class="menu-item" on:click={saveResume} disabled={isSaving}>
         <img src="/icons/save.svg" alt="Save"/>
 
@@ -109,6 +122,10 @@
 
       </button>
     </div>
+  {/if}
+
+  {#if showPopup}
+    <Popup message={popupMessage} type={popupType} />
   {/if}
 </div>
 
