@@ -91,6 +91,41 @@
 
 <!-- All your styles are preserved exactly as you provided them -->
 <style>
+		@media print {
+    /* 1. Remove the rigid grid structure and make it block-based for printing */
+    .builder-layout {
+        display: block;
+        height: auto !important; /* Allow the content to define the height */
+        overflow: visible !important; /* Allow the content to flow across pages */
+        margin: 0;
+        padding: 0;
+    }
+
+    /* 2. Hide the entire sidebars/footer and the navbar for a clean printout */
+    .left-sidebar-forms,
+    .left-sidebar-footer,
+    .right-sidebar {
+        display: none !important;
+    }
+
+    /* 3. Adjust the middle column (the "desk") to be the main print area */
+    .resume-preview {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none !important;
+        overflow: visible !important;
+        height: auto !important;
+        background-color: white !important;
+    }
+
+    /* 4. Ensure the resume paper itself has no margins or shadows */
+    .resume-paper {
+        margin: 0 auto !important;
+        box-shadow: none !important;
+        width: 100%;
+    }
+}
 	.loading-container {
 		display: flex;
 		justify-content: center;

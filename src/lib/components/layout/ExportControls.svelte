@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { resumeData } from '$lib/resumeStore';
 	import { get } from 'svelte/store';
-	// We no longer import supabase from the old file
 	import { onMount } from 'svelte';
+	import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
-	// 1. Receive resumeId AND the supabase client from the parent page
 	export let resumeId: string;
-	export let supabase: any; // The Supabase client is now passed in as a prop
+	export let supabase: any;
 
 	let html2pdf: any;
 	let isDownloading = false;
@@ -21,45 +21,62 @@
 		}
 	});
 
-	async function downloadPDF() {
-		if (isDownloading || !html2pdf) return;
-		isDownloading = true;
-		try {
-			const element = document.getElementById('resume-preview-paper');
-			if (!element) throw new Error('Preview element not found!');
-			const filename = `${get(resumeData).basicInfo.name.replace(/ /g, '_')}_Resume.pdf`;
-			const options = {
-				margin: [0.25, 0.1],
-				filename: filename,
-				image: { type: 'jpeg', quality: 0.98 },
-				html2canvas: { scale: 2, useCORS: true },
-				jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-			};
-			await html2pdf().from(element).set(options).save();
-		} catch (error) {
-			console.error('Failed to generate PDF:', error);
-			alert('Sorry, an error occurred while generating the PDF.');
-		} finally {
-			isDownloading = false;
-		}
-	}
+// In src/lib/components/layout/ExportControls.svelte
 
-	// This function saves the current resume state to Supabase
+async function downloadPDF() {
+	if (isDownloading) return;
+	isDownloading = true;
+
+	try {
+		// 1. Find the single, continuous content element.
+		const element = document.getElementById('resume-preview-paper');
+		if (!element) throw new Error('Resume content element not found!');
+
+		const filename = `${get(resumeData).basicInfo.name.replace(/ /g, '_')}_Resume.pdf`;
+
+		// 2. Use html2canvas to take a high-quality screenshot.
+		const canvas = await html2canvas(element, {
+			scale: 2, // Render at 2x resolution for sharpness
+			useCORS: true // Allows loading external images/fonts
+		});
+
+		// 3. Get the dimensions of the captured image.
+		const imgData = canvas.toDataURL('image/jpeg', 0.98);
+		const imgWidth = canvas.width;
+		const imgHeight = canvas.height;
+
+		// 4. Create a new PDF with a custom size that matches the image.
+		// We convert pixel dimensions to points (1px = 0.75pt).
+		const pdf = new jsPDF({
+			orientation: 'p', // portrait
+			unit: 'pt', // use points
+			format: [imgWidth * 0.75, imgHeight * 0.75] // [width, height]
+		});
+
+		// 5. Add the screenshot image to the PDF, covering the entire page.
+		pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth * 0.75, imgHeight * 0.75);
+
+		// 6. Save the PDF.
+		pdf.save(filename);
+
+	} catch (error) {
+		console.error('Failed to generate PDF:', error);
+		alert('Sorry, an error occurred while generating the PDF.');
+	} finally {
+		isDownloading = false;
+	}
+}
+
 	async function saveResume() {
 		if (isSaving || !resumeId) return;
-
 		isSaving = true;
 		try {
-			const currentData = get(resumeData); // Get a snapshot of the resume data
-
-			// 2. This will now use the supabase client passed in as a prop
+			const currentData = get(resumeData);
 			const { error } = await supabase
 				.from('resumes')
 				.update({ data: currentData, updated_at: new Date().toISOString() })
 				.eq('id', resumeId);
-
 			if (error) throw error;
-
 			alert('Resume saved successfully!');
 		} catch (error) {
 			console.error('Error saving resume:', error);
@@ -79,6 +96,7 @@
 	</button>
 </div>
 
+<!-- All your styles are preserved exactly as you provided them -->
 <style>
 	.export-controls {
 		padding: 1.5rem;

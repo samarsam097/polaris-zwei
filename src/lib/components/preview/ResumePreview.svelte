@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { resumeData } from '$lib/resumeStore';
 	import { uiStore } from '$lib/uiStore';
+
+	// --- LOGIC FOR VISUAL PAGE BREAKS ---
+	let contentContainer: HTMLElement; // Reference to the content div
+	let contentHeight = 0;
+	const pageHeight = 920; // The min-height of your A4 page in pixels
+
+	// Calculate how many page break lines are needed
+	$: numPageBreaks = Math.floor(contentHeight / pageHeight);
 </script>
 
 <div
@@ -10,141 +18,158 @@
 	class:theme-modern={$uiStore.selectedTheme === 'modern'}
 	class:theme-elegant={$uiStore.selectedTheme === 'elegant'}
 >
-	<header class="resume-header">
-		{#if $resumeData.basicInfo.photo}
-			<div class="photo-container">
-				<img
-					src={$resumeData.basicInfo.photo}
-					alt="Profile"
-					class="profile-photo"
-					class:circle={$resumeData.basicInfo.photoShape === 'circle'}
-					class:square={$resumeData.basicInfo.photoShape === 'square'}
-				/>
-			</div>
-		{/if}
+	<!-- This new wrapper is crucial for accurately measuring the content's height -->
+	<div class="content-wrapper" bind:this={contentContainer} bind:clientHeight={contentHeight}>
+		{#if $resumeData.basicInfo}
+			<header class="resume-header">
+				{#if $resumeData.basicInfo.photo}
+					<div class="photo-container">
+						<img
+							src={$resumeData.basicInfo.photo}
+							alt="Profile"
+							class="profile-photo"
+							class:circle={$resumeData.basicInfo.photoShape === 'circle'}
+							class:square={$resumeData.basicInfo.photoShape === 'square'}
+						/>
+					</div>
+				{/if}
 
-		<div class="header-text">
-			<h1>{$resumeData.basicInfo.name}</h1>
-			<div class="contact-info">
-				{#if $resumeData.basicInfo.email}
-					<span>{$resumeData.basicInfo.email}</span>
-				{/if}
-				{#if $resumeData.basicInfo.phone}
-					<span>• {$resumeData.basicInfo.phone}</span>
-				{/if}
-				{#if $resumeData.basicInfo.address}
-					<span>• {$resumeData.basicInfo.address}</span>
-				{/if}
-				{#if $resumeData.basicInfo.website}
-					<span>• {$resumeData.basicInfo.website}</span>
-				{/if}
-				{#if $resumeData.customFields}
-					{#each $resumeData.customFields as field}
-						{#if field.label && field.value}
-							<span>• {field.label}: {field.value}</span>
+				<div class="header-text">
+					<h1>{$resumeData.basicInfo.name}</h1>
+					<div class="contact-info">
+						{#if $resumeData.basicInfo.email}
+							<span>{$resumeData.basicInfo.email}</span>
 						{/if}
-					{/each}
-				{/if}
-			</div>
-		</div>
-	</header>
-
-	{#if $resumeData.summary}
-		<section class="resume-section">
-			<h2>Summary</h2>
-			<p>{$resumeData.summary}</p>
-		</section>
-	{/if}
-
-	{#if $resumeData.workExperience?.length > 0}
-		<section class="resume-section">
-			<h2>Work Experience</h2>
-			{#each $resumeData.workExperience as experience}
-				<div class="entry">
-					<h4>{experience.role}</h4>
-					<p><strong>{experience.company}</strong></p>
-					<ul class="summary-list">
-						{#if experience.summary}
-							{#each experience.summary.split('•').slice(1) as data}
-								<li>{data.trim()}</li>
-							{/each}
+						{#if $resumeData.basicInfo.phone}
+							<span>• {$resumeData.basicInfo.phone}</span>
 						{/if}
-					</ul>
-				</div>
-			{/each}
-		</section>
-	{/if}
-
-	{#if $resumeData.skills?.length > 0}
-		<section class="resume-section">
-			<h2>Skills</h2>
-			<div class="skill-pills">
-				{#each $resumeData.skills as skill}
-					<span class="skill-pill">{skill}</span>
-				{/each}
-			</div>
-		</section>
-	{/if}
-
-	{#if $resumeData.education?.length > 0}
-		<section class="resume-section">
-			<h2>Education</h2>
-			{#each $resumeData.education as entry}
-				<div class="entry">
-					<h4>{entry.degree}</h4>
-					<p><strong>{entry.institution}</strong>, {entry.location}</p>
-					<p class="dates">{entry.startDate} - {entry.endDate}</p>
-				</div>
-			{/each}
-		</section>
-	{/if}
-
-	{#if $resumeData.projects?.length > 0}
-		<section class="resume-section">
-			<h2>Projects</h2>
-			{#each $resumeData.projects as project}
-				<div class="entry">
-					<h4>{project.name}</h4>
-					{#if project.link}
-						<p class="project-link">{project.link}</p>
-					{/if}
-
-					{#if project.summary && project.summary.includes('•')}
-						<ul class="summary-list">
-							{#each project.summary.split('•') as point}
-								{#if point.trim() !== ''}
-									<li>{point.trim()}</li>
+						{#if $resumeData.basicInfo.address}
+							<span>• {$resumeData.basicInfo.address}</span>
+						{/if}
+						{#if $resumeData.basicInfo.website}
+							<span>• {$resumeData.basicInfo.website}</span>
+						{/if}
+						<!-- Moved custom fields into the header where they belong -->
+						{#if $resumeData.customFields}
+							{#each $resumeData.customFields as field}
+								{#if field.label && field.value}
+									<span>• {field.label}: {field.value}</span>
 								{/if}
 							{/each}
+						{/if}
+					</div>
+				</div>
+			</header>
+		{/if}
+
+		{#if $resumeData.summary}
+			<section class="resume-section">
+				<h2>Summary</h2>
+				<p>{$resumeData.summary}</p>
+			</section>
+		{/if}
+
+		{#if $resumeData.workExperience?.length > 0}
+			<section class="resume-section">
+				<h2>Work Experience</h2>
+				{#each $resumeData.workExperience as experience}
+					<div class="entry">
+						<h4>{experience.role}</h4>
+						<p><strong>{experience.company}</strong></p>
+						<ul class="summary-list">
+							{#if experience.summary}
+								{#each experience.summary.split('•').slice(1) as data}
+									<li>{data.trim()}</li>
+								{/each}
+							{/if}
 						</ul>
-					{:else}
-						<p>{project.summary}</p>
-					{/if}
-				</div>
-			{/each}
-		</section>
-	{/if}
-
-	{#if $resumeData.certifications?.length > 0}
-		<section class="resume-section">
-			<h2>Certifications</h2>
-			{#each $resumeData.certifications as cert}
-				<div class="entry">
-					<p><strong>{cert.name}</strong> - {cert.issuer}, {cert.date}</p>
-				</div>
-			{/each}
-		</section>
-	{/if}
-
-	{#if $resumeData.languages?.length > 0}
-		<section class="resume-section">
-			<h2>Languages</h2>
-			<div class="skill-pills">
-				{#each $resumeData.languages as language}
-					<span class="skill-pill">{language}</span>
+					</div>
 				{/each}
-			</div>
-		</section>
+			</section>
+		{/if}
+
+		{#if $resumeData.skills?.length > 0}
+			<section class="resume-section">
+				<h2>Skills</h2>
+				<div class="skill-pills">
+					{#each $resumeData.skills as skill}
+						<span class="skill-pill">{skill}</span>
+					{/each}
+				</div>
+			</section>
+		{/if}
+
+		{#if $resumeData.education?.length > 0}
+			<section class="resume-section">
+				<h2>Education</h2>
+				{#each $resumeData.education as entry}
+					<div class="entry">
+						<h4>{entry.degree}</h4>
+						<p><strong>{entry.institution}</strong>, {entry.location}</p>
+						<p class="dates">{entry.startDate} - {entry.endDate}</p>
+					</div>
+				{/each}
+			</section>
+		{/if}
+
+		{#if $resumeData.projects?.length > 0}
+			<section class="resume-section">
+				<h2>Projects</h2>
+				{#each $resumeData.projects as project}
+					<div class="entry">
+						<h4>{project.name}</h4>
+						{#if project.link}
+							<p class="project-link">{project.link}</p>
+						{/if}
+
+						{#if project.summary && project.summary.includes('•')}
+							<ul class="summary-list">
+								{#each project.summary.split('•') as point}
+									{#if point.trim() !== ''}
+										<li>{point.trim()}</li>
+									{/if}
+								{/each}
+							</ul>
+						{:else}
+							<p>{project.summary}</p>
+						{/if}
+					</div>
+				{/each}
+			</section>
+		{/if}
+
+		{#if $resumeData.certifications?.length > 0}
+			<section class="resume-section">
+				<h2>Certifications</h2>
+				{#each $resumeData.certifications as cert}
+					<div class="entry">
+						<p><strong>{cert.name}</strong> - {cert.issuer}, {cert.date}</p>
+					</div>
+				{/each}
+			</section>
+		{/if}
+
+		{#if $resumeData.languages?.length > 0}
+			<section class="resume-section">
+				<h2>Languages</h2>
+				<div class="skill-pills">
+					{#each $resumeData.languages as language}
+						<span class="skill-pill">{language}</span>
+					{/each}
+				</div>
+			</section>
+		{/if}
+	</div>
+
+	<!-- This loop renders the visual page breaks, but they are ignored by the PDF generator -->
+	{#if numPageBreaks > 0}
+		{#each Array(numPageBreaks) as _, i}
+			<div
+				class="page-break"
+				style="top: {(i + 1) * pageHeight}px;"
+				data-html2canvas-ignore="true"
+			/>
+		{/each}
 	{/if}
 </div>
 
@@ -152,16 +177,25 @@
 	.resume-paper {
 		background: white;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		margin: 2rem auto; /* Corrected CSS syntax */
+		margin: 2rem auto;
 		padding: 2rem;
 		overflow-wrap: break-word;
 		transition: all 0.3s ease;
 		width: 650px;
-		min-height: 920px; /* Corrected CSS syntax */
+		min-height: 920px;
 		position: relative;
 	}
 
-	/* --- ALL YOUR OTHER STYLES --- */
+	/* --- PAGE BREAK LINE (VISUAL ONLY) --- */
+	.page-break {
+		position: absolute;
+		left: 0;
+		right: 0;
+		border-top: 2px dashed #cccccc;
+		pointer-events: none; /* Makes the line unclickable */
+	}
+
+	/* --- ALL YOUR OTHER STYLES ARE PRESERVED --- */
 	h1,
 	h2,
 	h4,
@@ -293,4 +327,17 @@
 		font-style: italic;
 		color: #555;
 	}
+	.resume-section {
+	margin-top: 1.5rem;
+	/* page-break-inside: avoid; <--- DELETE THIS LINE */
+}
+
+/* ADD this rule to prevent headings from being left alone at the bottom of a page */
+
+
+/* ADD this rule to prevent a single job or project from being split in half */
+.entry {
+	margin-top: 1rem;
+
+}
 </style>
