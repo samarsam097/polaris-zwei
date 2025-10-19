@@ -178,13 +178,14 @@
 
 		background: white;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		margin: 2rem auto;
+		margin: 3rem auto;
 		padding: 2rem;
 		overflow-wrap: break-word;
 		transition: all 0.3s ease;
 		width: 650px;
 		min-height: 920px;
 		position: relative;
+		
 	}
 
 	/* --- PAGE BREAK LINE (VISUAL ONLY) --- */

@@ -10,6 +10,7 @@
 	// This receives the `session` and `supabase` client from your root layout
 	export let data;
 	const { session, supabase } = data;
+	
 
 	// --- COMPONENT IMPORTS ---
 	import BasicInfoForm from '$lib/components/sections/BasicInfoForm.svelte';
@@ -89,37 +90,18 @@
 {/if}
 
 <!-- All your styles are preserved exactly as you provided them -->
+<!-- In src/routes/resume/[id]/+page.svelte -->
+
+<!-- In src/routes/resume/[id]/+page.svelte -->
+
 <style>
-		@media print {
-    /* 1. Remove the rigid grid structure and make it block-based for printing */
-    .builder-layout {
-        display: block;
-        height: auto !important; /* Allow the content to define the height */
-        overflow: visible !important; /* Allow the content to flow across pages */
-        margin: 0;
-        padding: 0;
-    }
-
-    /* 2. Hide the entire sidebars/footer and the navbar for a clean printout */
-    .left-sidebar-forms,
-    .left-sidebar-footer,
-    .right-sidebar {
-        display: none !important;
-    }
-
-    /* 3. Adjust the middle column (the "desk") to be the main print area */
-
-
-    /* 4. Ensure the resume paper itself has no margins or shadows */
-
-}
 	.loading-container {
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		height: calc(100vh - 65px); /* Adjust 65px to your navbar height */
+		height: calc(100vh - 65px);
 		font-size: 1.5rem;
-		color: #555;
+		color: var(--text-secondary);
 	}
 
 	.builder-layout {
@@ -127,33 +109,109 @@
 		grid-template-areas:
 			'forms preview right'
 			'footer preview right';
-		grid-template-columns: 400px 1fr 300px;
+		grid-template-columns: 400px 1fr 350px;
 		grid-template-rows: 1fr auto;
 		height: calc(100vh - 65px);
 		overflow: hidden;
 	}
-	.left-sidebar-forms {
+
+	/* --- COLUMN STYLES USING CSS VARIABLES --- */
+	.left-sidebar-forms,
+	.right-sidebar {
 		grid-area: forms;
 		overflow-y: auto;
-		background-color: #111827;
+		background-color: var(--background-sidebar); /* White background */
 		padding: 1.5rem;
+		border-right: 1px solid var(--border-color); /* Subtle separator */
+	}
+	.right-sidebar {
+		grid-area: right;
+		border-right: none;
+		border-left: 1px solid var(--border-color);
 	}
 	.left-sidebar-footer {
 		grid-area: footer;
-		background-color: #111827;
-		border-top: 1px solid #374151;
+		background-color: var(--background-sidebar);
+		border-top: 1px solid var(--border-color);
 	}
 	.resume-preview {
 		grid-area: preview;
 		overflow-y: auto;
-		background-color: #e5e7eb;
+		background-color: var(--background-main); /* Light gray "desk" */
 		padding: 2rem;
-			position: relative !important;
+		position: relative;
 	}
-	.right-sidebar {
-		grid-area: right;
-		overflow-y: auto;
-		background-color: #111827;
-		padding: 1.5rem;
+
+	/* --- GLOBAL FORM STYLING FOR LIGHT THEME --- */
+	:global(.form-section) {
+		margin-bottom: 2rem;
+	}
+	:global(.form-section h3) {
+		color: var(--text-headings);
+		font-size: 1.25rem;
+		margin-bottom: 1rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px solid var(--border-color);
+	}
+	:global(.left-sidebar-forms label) {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--text-secondary);
+		margin-bottom: 0.25rem;
+		display: block;
+	}
+	:global(.left-sidebar-forms input),
+	:global(.left-sidebar-forms textarea) {
+		width: 100%;
+		background-color: var(--background-input);
+		color: var(--text-primary);
+		border: 1px solid var(--border-color);
+		border-radius: 6px;
+		padding: 0.75rem;
+		font-size: 1rem;
+		transition: border-color 0.2s;
+	}
+	:global(.left-sidebar-forms input:focus),
+	:global(.left-sidebar-forms textarea:focus) {
+		outline: none;
+		border-color: var(--border-focus);
+	}
+	:global(.ats-warning) {
+		font-size: 0.8rem;
+		color: #92400e; /* Dark amber text */
+		background-color: #fef3c7; /* Light amber background */
+		padding: 0.5rem;
+		border-radius: 4px;
+	}
+
+	/* --- GLOBAL BUTTON STYLES FOR LIGHT THEME --- */
+	:global(.add-btn) {
+		width: 100%;
+		padding: 0.75rem;
+		background-color: var(--accent-primary);
+		color: var(--text-inverted);
+		border: none;
+		border-radius: 6px;
+		font-weight: bold;
+		cursor: pointer;
+		transition: background-color 0.2s;
+	}
+	:global(.add-btn:hover) {
+		filter: brightness(90%);
+	}
+	:global(.delete-btn),
+	:global(.delete-photo-btn) {
+		background-color: transparent;
+		color: var(--accent-destructive);
+		border: 1px solid var(--accent-destructive);
+		border-radius: 6px;
+		padding: 0.5rem 1rem;
+		cursor: pointer;
+		transition: background-color 0.2s, color 0.2s;
+	}
+	:global(.delete-btn:hover),
+	:global(.delete-photo-btn:hover) {
+		background-color: var(--accent-destructive);
+		color: var(--text-inverted);
 	}
 </style>

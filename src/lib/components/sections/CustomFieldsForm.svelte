@@ -1,105 +1,108 @@
 <script lang="ts">
-	import { resumeData } from '$lib/resumeStore';
+    import { resumeData } from '$lib/resumeStore';
+    import type { CustomField } from '$lib/resumeStore';
 
-	function addCustomField() {
-		const newField = { id: crypto.randomUUID(), label: '', value: '' };
-		$resumeData.customFields = [...$resumeData.customFields, newField];
-	}
+    function addCustomField() {
+        const newField: CustomField = { id: crypto.randomUUID(), label: '', value: '' };
+        $resumeData.customFields = [...$resumeData.customFields, newField];
+    }
 
-	function deleteCustomField(idToDelete: string) {
-		$resumeData.customFields = $resumeData.customFields.filter((field) => field.id !== idToDelete);
-	}
+    function deleteCustomField(idToDelete: string) {
+        $resumeData.customFields = $resumeData.customFields.filter((field) => field.id !== idToDelete);
+    }
 </script>
 
 <div class="form-section">
-	<h3>Custom Sections</h3>
-	{#each $resumeData.customFields as field (field.id)}
-		<div class="custom-field-entry">
-			<label>Section Title</label>
-			<input type="text" placeholder="e.g., 'Objective' or 'Publications'" bind:value={field.label} />
-
-			<label>Content</label>
-			<textarea placeholder="Write the content for this section..." bind:value={field.value} rows="5"></textarea>
-
-			<button class="delete-btn" on:click={() => deleteCustomField(field.id)}>Delete Section</button>
-		</div>
-	{/each}
-	<button on:click={addCustomField} class="add-btn">+ Add Custom Section</button>
+    <h3>Custom Sections</h3>
+    {#each $resumeData.customFields as field (field.id)}
+        <div class="list-entry">
+            <input type="text" placeholder="Section Title (e.g., 'Objective')" bind:value={field.label} />
+            <textarea placeholder="Write the content for this section..." bind:value={field.value} rows="5"></textarea>
+            <button class="delete-btn" on:click={() => deleteCustomField(field.id)}>Delete Section</button>
+        </div>
+    {/each}
+    <button on:click={addCustomField} class="add-btn">+ Add Custom Section</button>
 </div>
 
 <style>
-	.form-section {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
+    /* These styles now match your WorkExperienceForm for consistency */
+    h3 {
+        color: var(--text-headings);
+    }
 
-	.custom-field-entry {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		padding: 1rem;
-		border: 1px solid #374151; /* Dark border */
-		border-radius: 8px;
-	}
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
 
-	/* Use the global styles for consistency */
-	label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: #9ca3af;
-	}
+    .list-entry {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+    }
 
-	input,
-	textarea {
-	display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		padding: 1rem;
-					margin-bottom: 10px;
-		border: 1px solid #e0e0e0;
-		border-radius: 6px;
-	}
-	textarea{
-			resize: none;
-	}
+    input,
+    textarea {
+        width: 100%;
+        box-sizing: border-box;
+        background-color: var(--background-input);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
 
-	/* Generic Add Button Style */
-	.add-btn {
-		width: 100%;
-		padding: 0.75rem;
-		background-color: #4b5563;
-		color: #f9fafb;
-		border: none;
-		border-radius: 6px;
-		font-weight: bold;
-		cursor: pointer;
-		transition: background-color 0.2s;
-	}
-	.add-btn:hover {
-		background-color: #6b7280;
-	}
+    input:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--border-focus);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
 
-	/* Specific Delete Button Style */
-	.delete-btn {
-			width: 100%;
-		background-color: transparent;
-		color: #ef4444; /* Red color for delete action */
-		border: 1px solid #ef4444;
-		border-radius: 6px;
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		align-self: flex-end; /* Pushes the button to the right */
-		margin-top: 0.5rem;
-		transition: background-color 0.2s, color 0.2s;
-	}
+    .add-btn,
+    .delete-btn {
+        padding: 0.5rem;
+        width: 100%;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: 'DMSans', sans-serif;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: background-color 0.2s;
+    }
 
-	.delete-btn:hover {
-		background-color: #ef4444;
-		color: white;
-	}
-	h3{
-			color:darkgrey;
-	}
+    .add-btn {
+        color: green;
+    }
+    .add-btn:hover {
+        background: rgba(22, 163, 74, 0.05);
+    }
 
+    .delete-btn {
+        color: red;
+        margin-top: 0.5rem;
+        align-self: flex-end;
+        width: 100%;
+        padding: 0.5rem 1rem;
+    }
+    .delete-btn:hover {
+        background: rgba(220, 38, 38, 0.05);
+    }
 </style>

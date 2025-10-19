@@ -7,6 +7,7 @@
 	import LoginModal from '$lib/components/ui/LoginModal.svelte';
 	import SignUpModal from '$lib/components/ui/SignUpModal.svelte';
 
+
 	let isMenuOpen = false;
 	let isSettingsModalOpen = false;
 	let isLoginModalOpen = false;
@@ -105,12 +106,20 @@
 		<div class="nav-links">
 			{#if $page.data.session}
 				<div class="profile-menu">
-					<button class="avatar-button" on:click={() => (isMenuOpen = !isMenuOpen)}>
+					<!-- Make avatar and username a single clickable control so both toggle the same menu -->
+					<button class="avatar-button avatar-with-name" aria-label="Open profile menu" on:click={() => (isMenuOpen = !isMenuOpen)}>
 						<div class="avatar default-avatar">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="user-icon">
 								<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
 								<circle cx="12" cy="7" r="4" />
 							</svg>
+						</div>
+						<div class="username">
+							{#if $page.data.session?.user}
+								{($page.data.session.user.user_metadata && $page.data.session.user.user_metadata.full_name) ? $page.data.session.user.user_metadata.full_name : $page.data.session.user.email}
+							{:else}
+								Account
+							{/if}
 						</div>
 					</button>
 					{#if isMenuOpen}
@@ -131,10 +140,13 @@
 	</div>
 </nav>
 
+<!-- In src/lib/components/layout/Navbar.svelte -->
+
 <style>
 	.navbar {
-		background-color: #111827;
-		border-bottom: 1px solid black;
+		/* Use variables for a light theme */
+		background-color: var(--background-sidebar);
+		border-bottom: 1px solid var(--border-color);
 		padding: 1rem 2rem;
 		font-family: 'Inter', sans-serif;
 		position: sticky;
@@ -151,30 +163,35 @@
 	.logo {
 		font-size: 1.5rem;
 		text-decoration: none;
-		color: white;
+		/* Use variable for dark text */
+		color: var(--text-headings);
 	}
 	.nav-links {
 		display: flex;
 		align-items: center;
 		gap: 1.5rem;
 	}
-	.nav-links a {
+	/* This is for the "Features" and "Pricing" links */
+	.dropdown-link, .nav-links a {
 		text-decoration: none;
-		color: #9ca3af;
+		color: var(--text-secondary);
 		transition: color 0.2s;
 	}
-	.nav-links a:hover {
-		color: #ffffff;
+	.dropdown-link:hover, .nav-links a:hover {
+		color: var(--accent-primary);
 	}
 	.nav-button {
-		background-color: #007bff;
-		color: white !important;
+		background-color: var(--accent-primary);
+		color: var(--text-inverted);
+		border: none;
+		cursor: pointer;
+		font-family: 'Inter', sans-serif;
+		font-size: 1rem;
 		padding: 0.5rem 1rem;
 		border-radius: 6px;
 	}
 	.nav-button:hover {
-		background-color: #0056b3;
-		color: white;
+		filter: brightness(90%);
 	}
 	.profile-menu {
 		position: relative;
@@ -186,28 +203,52 @@
 		cursor: pointer;
 		border-radius: 50%;
 	}
+	.avatar-with-name {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.125rem 0.5rem;
+		border-radius: 9999px;
+		transition: background-color 0.15s;
+	}
+	.avatar-with-name:hover {
+		background-color: var(--background-main);
+	}
 	.default-avatar {
 		width: 40px;
 		height: 40px;
 		border-radius: 50%;
-		border: 2px solid #4b5563;
-		background-color: #374151;
+		border: 2px solid var(--border-color);
+		background-color: var(--background-main);
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		box-sizing: border-box;
-		color: #9ca3af;
+		color: var(--text-secondary);
 	}
 	.user-icon {
 		width: 24px;
 		height: 24px;
 	}
+	.username {
+		color: var(--text-primary);
+		font-family: 'DMSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+			sans-serif;
+		font-size: 0.95rem;
+		font-weight: 500;
+		display: inline-flex;
+		align-items: center;
+		white-space: nowrap;
+		max-width: 10rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 	.dropdown-menu {
 		position: absolute;
 		top: 120%;
 		right: 0;
-		background-color: white;
-		border: 1px solid #e0e0e0;
+		background-color: var(--background-sidebar);
+		border: 1px solid var(--border-color);
 		border-radius: 8px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 		min-width: 150px;
@@ -225,20 +266,17 @@
 		font-size: 1rem;
 		font-family: 'DMSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
 			sans-serif;
-		color: #333;
+		color: var(--text-primary);
 		text-decoration: none;
 		transition: background-color 0.2s;
 	}
 	.dropdown-item:hover {
-		background-color: #f5f5f5;
-		color: #333;
-	}
-	a.dropdown-item:hover {
-		color: #333;
+		background-color: var(--background-main);
+		color: var(--text-primary);
 	}
 	.separator {
 		height: 1px;
-		background-color: #eee;
+		background-color: var(--border-color);
 		margin: 0.5rem 0;
 	}
 </style>

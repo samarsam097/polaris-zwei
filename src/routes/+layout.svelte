@@ -30,18 +30,43 @@
 	<slot />
 </main>
 
+<!-- In src/routes/+layout.svelte -->
+
 <style>
-	/* Hier stehen Ihre globalen Stile für Schriftart und Body. */
+	/* --- YOUR NEW LIGHT THEME CONTROL PANEL --- */
+	:root {
+		/* Background Colors */
+		--background-main: #f3f4f6; /* A soft, light gray for the "desk" */
+		--background-sidebar: #ffffff; /* Clean white for the sidebars */
+		--background-input: #f9fafb; /* Slightly off-white for inputs */
+
+		/* Text Colors */
+		--text-headings: #111827; /* Very dark gray for titles */
+		--text-primary: #1f2937;  /* Primary text color */
+		--text-secondary: #6b7280; /* Lighter gray for secondary text/labels */
+		--text-inverted: #ffffff; /* White text for colored buttons */
+
+		/* Accent Colors */
+		--accent-primary: #2563eb; /* A strong blue for primary actions */
+		--accent-secondary: #16a34a; /* A nice green for download */
+		--accent-destructive: #dc2626; /* A clear red for delete */
+
+		/* Border Colors */
+		--border-color: #d1d5db; /* Light gray for borders */
+		--border-focus: #2563eb;   /* Blue highlight on focus */
+	}
+
+	/* --- GLOBAL STYLES --- */
 	@font-face {
 		font-family: 'DMSans';
-		/* Erwägen Sie, die Schriftart mit Base64 einzubetten, um PDF-Probleme zu beheben */
 		src: url('/fonts/DMSans-Regular.ttf') format('truetype');
 		font-weight: normal;
 		font-style: normal;
 	}
 
 	:global(body) {
-		background-color: #111827;
+		/* Use a variable for the main background */
+		background-color: var(--background-main);
 		margin: 0;
 		padding: 0;
 		box-sizing: border-box;
