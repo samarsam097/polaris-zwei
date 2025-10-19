@@ -175,17 +175,21 @@
 
 <style>
 	.resume-paper {
-
 		background: white;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 		margin: 3rem auto;
 		padding: 2rem;
 		overflow-wrap: break-word;
 		transition: all 0.3s ease;
-		width: 650px;
+
+		/* --- MODIFIED FOR RESPONSIVENESS --- */
+		width: 100%; /* Was fixed at 650px */
+		max-width: 650px; /* This is the new maximum */
+		box-sizing: border-box; /* Ensures padding is included in the width */
+		/* --- END MODIFICATION --- */
+
 		min-height: 920px;
 		position: relative;
-		
 	}
 
 	/* --- PAGE BREAK LINE (VISUAL ONLY) --- */
@@ -330,16 +334,48 @@
 		color: #555;
 	}
 	.resume-section {
-	margin-top: 1.5rem;
-	/* page-break-inside: avoid; <--- DELETE THIS LINE */
-}
+		margin-top: 1.5rem;
+	}
 
-/* ADD this rule to prevent headings from being left alone at the bottom of a page */
+	.entry {
+		margin-top: 1rem;
+	}
 
+	/* --- ADDED FOR RESPONSIVENESS --- */
+	@media (max-width: 767px) {
+		.resume-paper {
+			/* Removes the large margin and shadow for a cleaner mobile view */
+			margin: 1rem 0;
+			padding: 1.5rem;
+			min-height: 0; /* Lets the content define the height */
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		}
 
-/* ADD this rule to prevent a single job or project from being split in half */
-.entry {
-	margin-top: 1rem;
+		/* Adjust header for smaller screens */
+		.resume-header {
+			flex-direction: column; /* Stack photo and text */
+			align-items: flex-start;
+			gap: 1rem;
+		}
 
-}
+		.header-text {
+			width: 100%;
+		}
+
+		/* Optional: Scale down text to fit better */
+		.theme-classic h1 {
+			font-size: 20pt;
+		}
+		.theme-classic h2 {
+			font-size: 13pt;
+		}
+		.theme-modern h1 {
+			font-size: 1.8rem;
+		}
+		.contact-info {
+			gap: 0.25rem;
+			font-size: 0.85rem;
+		}
+	}
+	/* --- END ADDED SECTION --- */
 </style>

@@ -1,118 +1,104 @@
 <script lang="ts">
     import { resumeData } from '$lib/resumeStore';
-    import type { Project } from '$lib/resumeStore';
+    import type { WorkExperience } from '$lib/resumeStore';
 
     let keywords = '';
-    let loadingProjectId: string | null = null;
+    let loadingExperienceId: string | null = null;
 
-    function addProject() {
-        const newProject: Project = {
+    function addExperience() {
+        const newExperience: WorkExperience = {
             id: crypto.randomUUID(),
-            name: '',
-            link: '',
+            company: '',
+            role: '',
+            startDate: '',
+            endDate: '',
             summary: ''
         };
-        $resumeData.projects = [...$resumeData.projects, newProject];
+        $resumeData.workExperience = [...$resumeData.workExperience, newExperience];
     }
 
-    function deleteProject(idToDelete: string) {
-        $resumeData.projects = $resumeData.projects.filter((p) => p.id !== idToDelete);
+    function deleteExperience(idToDelete: string) {
+        $resumeData.workExperience = $resumeData.workExperience.filter((exp) => exp.id !== idToDelete);
     }
 
-    async function generateProjectSummary(projectId: string, projectKeywords: string) {
-        if (!projectKeywords) {
-            alert('Please enter keywords for this project.');
+    async function generateWorkSummary(experienceId: string, experienceKeywords: string) {
+        if (!experienceKeywords) {
+            alert('Please enter keywords for this job.');
             return;
         }
-        loadingProjectId = projectId;
+        loadingExperienceId = experienceId;
+
         try {
             const response = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ keywords: projectKeywords, context: 'projectSummary' })
+                body: JSON.stringify({ keywords: experienceKeywords, context: 'workExperience' })
             });
+
             if (!response.ok) throw new Error('Request failed');
+
             const data = await response.json();
 
             resumeData.update((currentData) => {
-                const updatedProjects = currentData.projects.map((project) => {
-                    if (project.id === projectId) {
-                        return { ...project, summary: data.text };
-                    }
-                    return project;
-                });
-                currentData.projects = updatedProjects;
+                const expIndex = currentData.workExperience.findIndex((exp) => exp.id === experienceId);
+                if (expIndex !== -1) {
+                    currentData.workExperience[expIndex].summary = data.text;
+                }
                 return currentData;
             });
-
-        } catch (e) {
-            console.error(e);
-            alert('Failed to generate summary.');
+        } catch (error) {
+            console.error(error);
+            alert('An error occurred while generating the summary.');
         } finally {
-            loadingProjectId = null;
+            loadingExperienceId = null;
         }
     }
 </script>
 
 <div class="form-section">
-    <h3>Projects</h3>
-    {#each $resumeData.projects as project (project.id)}
+    <h3>Work Experience</h3>
+
+    {#each $resumeData.workExperience as experience, i (experience.id)}
         <div class="experience-entry">
-            <input class="sawal" type="text" placeholder="Project Name" bind:value={project.name} />
-            <input class="sawal" type="text" placeholder="Project Link (optional)" bind:value={project.link} />
-            <textarea
-                class="wk-textarea"
-                placeholder="Project description and achievements..."
-                bind:value={project.summary}
-                rows="4"
+            <input class ="sawal" type="text" placeholder="Company" bind:value={experience.company} />
+            <input class ="sawal" type="text" placeholder="Role / Title" bind:value={experience.role} />
+            <textarea class="wk-textarea"
+                placeholder="Job summary and achievements..."
+                bind:value={experience.summary}
+                rows="5"
             ></textarea>
 
             <div class="ai-controls">
                 <input
                     class="text-input"
                     type="text"
-                    placeholder="Keywords for AI..."
+                    placeholder="Keywords: e.g., managed team, increased sales by 20%"
                     on:input={(e) => (keywords = e.currentTarget.value)}
                 />
-                <button
-                    on:click={() => generateProjectSummary(project.id, keywords)}
-                    disabled={loadingProjectId === project.id}
+                <button 
                     class="ai-button"
+                    on:click={() => generateWorkSummary(experience.id, keywords)}
+                    disabled={loadingExperienceId === experience.id}
                     title="Generate with AI"
                 >
-                    {#if loadingProjectId === project.id}
+                    {#if loadingExperienceId === experience.id}
                         <svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>
                     {:else}
                         <img src="/icons/ai.svg" alt="Generate with AI" class="ai-icon" />
                     {/if}
                 </button>
             </div>
-            <button class="delete-btn" on:click={() => deleteProject(project.id)}>Delete</button>
+
+            <button class="delete-btn" on:click={() => deleteExperience(experience.id)}> Delete </button>
         </div>
     {/each}
-    <button on:click={addProject} class="add-btn">+ Add Project</button>
+
+    <button on:click={addExperience} class="add-btn"> + Add Work Experience </button>
 </div>
 
 <style>
     h3 {
         color: var(--text-headings);
-    }
-
-    .sawal,
-    .wk-textarea,
-    .text-input {
-        background: var(--background-input);
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-        font-family: 'DMSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    .sawal:focus,
-    .wk-textarea:focus,
-    .text-input:focus {
-        border-color: var(--border-focus);
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-        outline: none;
     }
 
     .form-section {
@@ -130,15 +116,30 @@
         border-radius: 8px;
     }
 
-    .sawal {
-        padding: 0.75rem;
-        border-radius: 6px;
+    .sawal,
+    .wk-textarea,
+    .text-input {
         width: 100%;
+        box-sizing: border-box;
+        background-color: var(--background-input);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
 
+    .sawal:focus,
+    .wk-textarea:focus,
+    .text-input:focus {
+        outline: none;
+        border-color: var(--border-focus);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
     .wk-textarea {
-        padding: 0.75rem;
-        border-radius: 6px;
         resize: vertical;
         min-height: 120px;
     }
@@ -150,14 +151,11 @@
         padding-top: 1rem;
         border-top: 1px solid var(--border-color);
     }
-
+    
     .text-input {
         flex-grow: 1;
-        padding: 0.75rem;
-        border-radius: 6px;
     }
 
-    /* --- NEW STYLES FOR THE ICON BUTTON --- */
     .ai-button {
         width: 40px;
         height: 40px;
@@ -171,7 +169,6 @@
         border-radius: 6px;
         cursor: pointer;
         transition: background-color 0.2s;
-        padding: 0; /* Remove padding for icon-only button */
     }
 
     .ai-button:hover:not(:disabled) {
@@ -186,12 +183,10 @@
     .ai-icon {
         width: 20px;
         height: 20px;
-        /* This CSS filter is a trick to color your black SVG */
         filter: invert(38%) sepia(97%) saturate(1588%) hue-rotate(205deg) brightness(98%) contrast(97%);
     }
 
-    /* --- BUTTON STYLES (copied from WorkExperienceForm) --- */
-    .add-btn {
+     .add-btn {
         color: var(--accent-secondary);
         border: 1px solid var(--border-color);
         background: transparent;
@@ -205,7 +200,7 @@
         color: var(--accent-destructive);
         border: 1px solid var(--border-color);
         background: transparent;
-        align-self: flex-end;
+        align-self: flex-end; /* Pushes button to the right */
         width: auto;
         padding: 0.5rem 1rem;
     }
@@ -233,8 +228,6 @@
     .sawal {
         box-sizing: border-box;
     }
-
-    /* --- SPINNER ANIMATION --- */
     .spinner {
         animation: rotate 2s linear infinite;
         width: 20px;
@@ -252,4 +245,3 @@
         100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
     }
 </style>
-

@@ -7,10 +7,11 @@
 	import { resumeData, initialData } from '$lib/resumeStore';
 
 	// --- 1. GET DATA FROM THE SERVER ---
-	// This receives the `session` and `supabase` client from your root layout
 	export let data;
 	const { session, supabase } = data;
-	
+
+	// --- RESPONSIVE STATE ---
+	let mobileView: 'forms' | 'preview' | 'right' = 'forms'; // Default to content view on mobile
 
 	// --- COMPONENT IMPORTS ---
 	import BasicInfoForm from '$lib/components/sections/BasicInfoForm.svelte';
@@ -24,13 +25,11 @@
 	import CustomFieldsForm from '$lib/components/sections/CustomFieldsForm.svelte';
 	import RightSidebar from '$lib/components/layout/RightSidebar.svelte';
 	import ResumePreview from '$lib/components/preview/ResumePreview.svelte';
-	import ExportControls from '$lib/components/layout/ExportControls.svelte';
+	import MobileNav from '$lib/components/layout/MobileNav.svelte'; // Import the new mobile nav
 
 	let isLoading = true;
 	let resumeId = '';
 
-	// --- 2. REDIRECT IF NOT LOGGED IN ---
-	// This check is now instant because the session data comes from the server
 	if (!session) {
 		goto('/');
 	}
@@ -46,7 +45,6 @@
 
 			if (error) throw error;
 
-			// This merge guarantees the store always has a valid structure
 			const loadedResumeData = data?.data || {};
 			const completeResumeData = { ...initialData, ...loadedResumeData };
 
@@ -56,45 +54,56 @@
 			alert('Could not load this resume. Returning to dashboard.');
 			goto('/dashboard');
 		} finally {
-			// This guarantees the loading screen is always hidden
 			isLoading = false;
 		}
 	});
+
+	function handleViewChange(event: CustomEvent) {
+		mobileView = event.detail;
+	}
 </script>
 
 {#if !isLoading}
-	<div class="builder-layout">
-		<div class="left-sidebar-forms">
-			<BasicInfoForm />
-			<SummaryForm />
-			<WorkExperienceForm />
-			<SkillsForm />
-			<EducationForm />
-			<ProjectsForm />
-			<CertificationsForm />
-			<LanguagesForm />
-			<CustomFieldsForm />
+	<div class="builder-container">
+		<div class="builder-layout">
+			<aside class="left-sidebar-forms" class:visible={mobileView === 'forms'}>
+				<BasicInfoForm />
+				<SummaryForm />
+				<WorkExperienceForm />
+				<SkillsForm />
+				<EducationForm />
+				<ProjectsForm />
+				<CertificationsForm />
+				<LanguagesForm />
+				<CustomFieldsForm />
+			</aside>
+
+			<main class="resume-preview" class:visible={mobileView === 'preview'}>
+				<ResumePreview />
+			</main>
+
+			<aside class="right-sidebar" class:visible={mobileView === 'right'}>
+				<RightSidebar />
+			</aside>
 		</div>
-
-		<main class="resume-preview">
-			<ExportControls {resumeId} {supabase} />
-			<ResumePreview />
-		</main>
-		<aside class="right-sidebar">
-
-			<RightSidebar />
-		</aside>
-	</div>
+        
+        <div class="mobile-nav-wrapper">
+            <MobileNav activeView={mobileView} on:viewchange={handleViewChange} />
+        </div>
+    </div>
 {:else}
 	<div class="loading-container"><p>Loading Resume...</p></div>
 {/if}
 
-<!-- All your styles are preserved exactly as you provided them -->
-<!-- In src/routes/resume/[id]/+page.svelte -->
-
-<!-- In src/routes/resume/[id]/+page.svelte -->
-
 <style>
+    .mobile-nav-wrapper {
+        display: block; /* Show it on mobile by default */
+        position: fixed; /* Stick it to the bottom */
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 40; 
+    }
 	.loading-container {
 		display: flex;
 		justify-content: center;
@@ -104,45 +113,98 @@
 		color: var(--text-secondary);
 	}
 
-	.builder-layout {
-		display: grid;
-		grid-template-areas:
-			'forms preview right'
-			'footer preview right';
-		grid-template-columns: 400px 1fr 350px;
-		grid-template-rows: 1fr auto;
+	.builder-container {
+		/* This container holds the layout and the mobile nav */
 		height: calc(100vh - 65px);
-		overflow: hidden;
+		display: flex;
+		flex-direction: column;
 	}
 
-	/* --- COLUMN STYLES USING CSS VARIABLES --- */
+	/* --- MOBILE FIRST (DEFAULT) --- */
+	.builder-layout {
+		flex-grow: 1; /* Make the layout fill the space above the nav */
+		overflow-y: auto; /* Allow the active column to scroll */
+		padding-bottom: 60px; /* Add space so content isn't hidden by the mobile nav */
+	}
+
+	/* By default, all columns are hidden on mobile */
 	.left-sidebar-forms,
+	.resume-preview,
 	.right-sidebar {
-		grid-area: forms;
-		overflow-y: auto;
-		background-color: var(--background-sidebar); /* White background */
-		padding: 1.5rem;
-		border-right: 1px solid var(--border-color); /* Subtle separator */
-	}
-	.right-sidebar {
-		grid-area: right;
-		border-right: none;
-		border-left: 1px solid var(--border-color);
-	}
-	.left-sidebar-footer {
-		grid-area: footer;
-		background-color: var(--background-sidebar);
-		border-top: 1px solid var(--border-color);
-	}
-	.resume-preview {
-		grid-area: preview;
-		overflow-y: auto;
-		background-color: var(--background-main); /* Light gray "desk" */
-		padding: 2rem;
-		position: relative;
+		display: none;
 	}
 
-	/* --- GLOBAL FORM STYLING FOR LIGHT THEME --- */
+	/* The .visible class (toggled by the tab bar) makes a column appear */
+	.visible {
+		display: block;
+	}
+
+	/* Add back the styling for the columns when they are visible on mobile */
+	.left-sidebar-forms.visible {
+		background-color: var(--background-sidebar);
+		padding: 1.5rem;
+	}
+	.resume-preview.visible {
+		background-color: var(--background-main);
+		padding: 1rem;
+	}
+	.right-sidebar.visible {
+		background-color: var(--background-sidebar);
+		padding: 1.5rem;
+	}
+
+	/* --- TABLET LAYOUT (768px and wider) --- */
+	@media (min-width: 768px) {
+		.mobile-nav-wrapper {
+            display: none; /* <-- THIS IS THE FIX */
+        }
+		.builder-layout {
+			display: grid;
+			grid-template-columns: 400px 1fr; /* Two columns */
+			height: 100%;
+			overflow: hidden;
+			padding-bottom: 0; /* Remove mobile-nav padding */
+		}
+
+		/* Show the first two columns, hide the third */
+		.left-sidebar-forms,
+		.resume-preview {
+			display: block;
+			overflow-y: auto;
+			height: 100%;
+		}
+		.right-sidebar {
+			display: none;
+		}
+
+		/* Re-apply desktop styles */
+		.left-sidebar-forms {
+			background-color: var(--background-sidebar);
+			padding: 1.5rem;
+			border-right: 1px solid var(--border-color);
+		}
+		.resume-preview {
+			background-color: var(--background-main);
+			padding: 2rem;
+			position: relative;
+		}
+	}
+
+	/* --- DESKTOP LAYOUT (1200px and wider) --- */
+	@media (min-width: 1200px) {
+		.builder-layout {
+			grid-template-columns: 400px 1fr 350px; /* Three columns */
+		}
+		.right-sidebar {
+			display: block; /* Show the right sidebar */
+			overflow-y: auto;
+			border-left: 1px solid var(--border-color);
+			background-color: var(--background-sidebar);
+			padding: 1.5rem;
+		}
+	}
+
+	/* Your global form styles remain unchanged */
 	:global(.form-section) {
 		margin-bottom: 2rem;
 	}
@@ -163,6 +225,7 @@
 	:global(.left-sidebar-forms input),
 	:global(.left-sidebar-forms textarea) {
 		width: 100%;
+		box-sizing: border-box; /* Add this for better padding control */
 		background-color: var(--background-input);
 		color: var(--text-primary);
 		border: 1px solid var(--border-color);
@@ -178,13 +241,11 @@
 	}
 	:global(.ats-warning) {
 		font-size: 0.8rem;
-		color: #92400e; /* Dark amber text */
-		background-color: #fef3c7; /* Light amber background */
+		color: #92400e;
+		background-color: #fef3c7;
 		padding: 0.5rem;
 		border-radius: 4px;
 	}
-
-	/* --- GLOBAL BUTTON STYLES FOR LIGHT THEME --- */
 	:global(.add-btn) {
 		width: 100%;
 		padding: 0.75rem;

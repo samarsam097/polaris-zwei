@@ -105,10 +105,11 @@
     }
 
     .delete-btn {
+        width:100%;
         color: red;
         margin-top: 0.5rem; /* Consistent margin */
         align-self: flex-end;
-        width: auto;
+        
         padding: 0.5rem 1rem;
     }
     .delete-btn:hover {
