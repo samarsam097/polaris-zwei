@@ -90,9 +90,11 @@
         border-color: var(--border-focus);
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
+    
 
     /* --- THIS IS THE NEW STYLE FOR THE ADD BUTTON --- */
     .add-btn {
+        font-family: DMSans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         width: 100%;
         padding: 0.75rem;
         background-color: transparent;

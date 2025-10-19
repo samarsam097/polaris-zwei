@@ -5,13 +5,14 @@
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 	import { resumeData, initialData } from '$lib/resumeStore';
+	import { uiStore, toggleThemeSidebar } from '$lib/uiStore'; // <-- UPDATED
 
 	// --- 1. GET DATA FROM THE SERVER ---
 	export let data;
 	const { session, supabase } = data;
 
 	// --- RESPONSIVE STATE ---
-	let mobileView: 'forms' | 'preview' | 'right' = 'forms'; // Default to content view on mobile
+	let mobileView: 'forms' | 'preview' | 'right' = 'forms';
 
 	// --- COMPONENT IMPORTS ---
 	import BasicInfoForm from '$lib/components/sections/BasicInfoForm.svelte';
@@ -25,7 +26,7 @@
 	import CustomFieldsForm from '$lib/components/sections/CustomFieldsForm.svelte';
 	import RightSidebar from '$lib/components/layout/RightSidebar.svelte';
 	import ResumePreview from '$lib/components/preview/ResumePreview.svelte';
-	import MobileNav from '$lib/components/layout/MobileNav.svelte'; // Import the new mobile nav
+	import MobileNav from '$lib/components/layout/MobileNav.svelte';
 
 	let isLoading = true;
 	let resumeId = '';
@@ -49,7 +50,8 @@
 			const completeResumeData = { ...initialData, ...loadedResumeData };
 
 			resumeData.set(completeResumeData);
-		} catch (error) {
+		} catch (error)
+		{
 			console.error('Error loading resume:', error);
 			alert('Could not load this resume. Returning to dashboard.');
 			goto('/dashboard');
@@ -61,9 +63,25 @@
 	function handleViewChange(event: CustomEvent) {
 		mobileView = event.detail;
 	}
+
+	// NEW: Closes sidebar if user clicks overlay
+	function handleOverlayClick() {
+		if ($uiStore.isThemeSidebarOpen) {
+			toggleThemeSidebar();
+		}
+	}
 </script>
 
 {#if !isLoading}
+	<div
+		class="sidebar-overlay"
+		class:active={$uiStore.isThemeSidebarOpen}
+		on:click={handleOverlayClick}
+		role="button"
+		tabindex="-1"
+		aria-label="Close theme sidebar"
+	/>
+
 	<div class="builder-container">
 		<div class="builder-layout">
 			<aside class="left-sidebar-forms" class:visible={mobileView === 'forms'}>
@@ -82,28 +100,24 @@
 				<ResumePreview />
 			</main>
 
-			<aside class="right-sidebar" class:visible={mobileView === 'right'}>
+			<aside
+				class="right-sidebar"
+				class:visible={mobileView === 'right'}
+				class:tablet-visible={$uiStore.isThemeSidebarOpen}
+			>
 				<RightSidebar />
 			</aside>
 		</div>
-        
-        <div class="mobile-nav-wrapper">
-            <MobileNav activeView={mobileView} on:viewchange={handleViewChange} />
-        </div>
-    </div>
+
+		<div class="mobile-nav-wrapper">
+			<MobileNav activeView={mobileView} on:viewchange={handleViewChange} />
+		</div>
+	</div>
 {:else}
 	<div class="loading-container"><p>Loading Resume...</p></div>
 {/if}
 
 <style>
-    .mobile-nav-wrapper {
-        display: block; /* Show it on mobile by default */
-        position: fixed; /* Stick it to the bottom */
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        z-index: 40; 
-    }
 	.loading-container {
 		display: flex;
 		justify-content: center;
@@ -114,7 +128,6 @@
 	}
 
 	.builder-container {
-		/* This container holds the layout and the mobile nav */
 		height: calc(100vh - 65px);
 		display: flex;
 		flex-direction: column;
@@ -122,24 +135,21 @@
 
 	/* --- MOBILE FIRST (DEFAULT) --- */
 	.builder-layout {
-		flex-grow: 1; /* Make the layout fill the space above the nav */
-		overflow-y: auto; /* Allow the active column to scroll */
-		padding-bottom: 60px; /* Add space so content isn't hidden by the mobile nav */
+		flex-grow: 1;
+		overflow-y: auto;
+		padding-bottom: 60px;
 	}
 
-	/* By default, all columns are hidden on mobile */
 	.left-sidebar-forms,
 	.resume-preview,
 	.right-sidebar {
-		display: none;
+		display: none; /* All hidden by default on mobile */
 	}
 
-	/* The .visible class (toggled by the tab bar) makes a column appear */
 	.visible {
-		display: block;
+		display: block; /* .visible (from MobileNav) shows one at a time */
 	}
 
-	/* Add back the styling for the columns when they are visible on mobile */
 	.left-sidebar-forms.visible {
 		background-color: var(--background-sidebar);
 		padding: 1.5rem;
@@ -153,29 +163,75 @@
 		padding: 1.5rem;
 	}
 
+	/* This is the wrapper for the MobileNav component */
+	.mobile-nav-wrapper {
+		display: block; /* Show it on mobile by default */
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		z-index: 40;
+	}
+
+	/* --- NEW: Sidebar Overlay (for tablet) --- */
+	.sidebar-overlay {
+		display: none;
+		position: fixed;
+		top: 65px; /* Below navbar */
+		left: 0;
+		width: 100%;
+		height: calc(100% - 65px);
+		background: rgba(0, 0, 0, 0.4);
+		z-index: 70;
+	}
+	.sidebar-overlay.active {
+		display: block;
+	}
+
 	/* --- TABLET LAYOUT (768px and wider) --- */
 	@media (min-width: 768px) {
 		.mobile-nav-wrapper {
-            display: none; /* <-- THIS IS THE FIX */
-        }
-		.builder-layout {
-			display: grid;
-			grid-template-columns: 400px 1fr; /* Two columns */
-			height: 100%;
-			overflow: hidden;
-			padding-bottom: 0; /* Remove mobile-nav padding */
+			display: none; /* Hide the bottom tab bar */
 		}
 
-		/* Show the first two columns, hide the third */
+		.builder-layout {
+			display: grid;
+			grid-template-columns: 400px 1fr;
+			height: 100%;
+			overflow: hidden;
+			padding-bottom: 0;
+		}
+
+		/* Show the first two columns */
 		.left-sidebar-forms,
 		.resume-preview {
 			display: block;
 			overflow-y: auto;
 			height: 100%;
 		}
+
+		/* --- NEW TABLET STYLES for Right Sidebar --- */
 		.right-sidebar {
-			display: none;
+			display: block; /* Make it a block so we can animate it */
+			position: fixed;
+			top: 65px; /* Below navbar */
+			right: 0;
+			width: 350px;
+			height: calc(100vh - 65px);
+			background-color: var(--background-sidebar);
+			border-left: 1px solid var(--border-color);
+			padding: 1.5rem;
+			overflow-y: auto;
+			z-index: 80;
+			box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+			transform: translateX(100%); /* Hidden by default */
+			transition: transform 0.3s ease-in-out;
 		}
+		/* This class (from uiStore) slides it into view */
+		.right-sidebar.tablet-visible {
+			transform: translateX(0);
+		}
+		/* --- END NEW TABLET STYLES --- */
 
 		/* Re-apply desktop styles */
 		.left-sidebar-forms {
@@ -192,15 +248,23 @@
 
 	/* --- DESKTOP LAYOUT (1200px and wider) --- */
 	@media (min-width: 1200px) {
+		.sidebar-overlay {
+			display: none; /* Hide overlay on desktop */
+		}
+
 		.builder-layout {
 			grid-template-columns: 400px 1fr 350px; /* Three columns */
 		}
+
+		/* --- REVERT sidebar to static position on desktop --- */
 		.right-sidebar {
-			display: block; /* Show the right sidebar */
-			overflow-y: auto;
-			border-left: 1px solid var(--border-color);
-			background-color: var(--background-sidebar);
-			padding: 1.5rem;
+			position: static;
+			width: auto;
+			height: 100%;
+			box-shadow: none;
+			transform: none; /* Unset the transform */
+			z-index: 1;
+			display: block; /* Make sure it's visible */
 		}
 	}
 

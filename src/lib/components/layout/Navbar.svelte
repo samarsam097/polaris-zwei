@@ -6,13 +6,14 @@
 
 	// Data Store
 	import { resumeData } from '$lib/resumeStore';
+	import { uiStore, toggleThemeSidebar } from '$lib/uiStore';
 
 	// Modals & Icons
 	import SettingsModal from '$lib/components/ui/SettingsModal.svelte';
 	import LoginModal from '$lib/components/ui/LoginModal.svelte';
 	import SignUpModal from '$lib/components/ui/SignUpModal.svelte';
-	// Import Menu and X for the mobile menu
-	import { Save, Download, Menu, X } from 'svelte-lucide';
+	// --- ADDED Palette ICON ---
+	import { Save, Download, Menu, X, Palette } from 'svelte-lucide';
 
 	// PDF Generation Libraries
 	import jsPDF from 'jspdf';
@@ -20,7 +21,7 @@
 
 	// --- STATE MANAGEMENT ---
 	let isMenuOpen = false;
-	let isMobileMenuOpen = false; // <-- New state for mobile
+	let isMobileMenuOpen = false;
 	let isSettingsModalOpen = false;
 	let isLoginModalOpen = false;
 	let isSignUpModalOpen = false;
@@ -36,12 +37,12 @@
 	const closeMobileMenu = () => (isMobileMenuOpen = false);
 
 	// --- AUTHENTICATION & MODAL FUNCTIONS ---
+	// (These functions are unchanged)
 	function openSignUpModal() {
 		closeMobileMenu();
 		isLoginModalOpen = false;
 		isSignUpModalOpen = true;
 	}
-
 	async function loginWithGoogle() {
 		closeMobileMenu();
 		const { supabase } = $page.data;
@@ -50,9 +51,7 @@
 			options: { redirectTo: `${location.origin}/auth/callback` }
 		});
 	}
-
 	async function handleEmailSignUp(event: CustomEvent) {
-		// ... (function logic is unchanged)
 		const { name, email, password } = event.detail;
 		const { supabase } = $page.data;
 		const { error } = await supabase.auth.signUp({
@@ -67,9 +66,7 @@
 			isSignUpModalOpen = false;
 		}
 	}
-
 	async function handleEmailSignIn(event: CustomEvent) {
-		// ... (function logic is unchanged)
 		const { email, password } = event.detail;
 		const { supabase } = $page.data;
 		const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -81,7 +78,6 @@
 			goto('/dashboard');
 		}
 	}
-
 	async function signOut() {
 		const { supabase } = $page.data;
 		if (supabase) {
@@ -91,15 +87,12 @@
 		closeMobileMenu();
 		await goto('/', { invalidateAll: true });
 	}
-
 	function openSettings() {
 		isMenuOpen = false;
 		closeMobileMenu();
 		isSettingsModalOpen = true;
 	}
-
 	async function handleDeleteAccount() {
-		// ... (function logic is unchanged)
 		const response = await fetch('/api/delete-account', { method: 'POST' });
 		if (response.ok) {
 			alert('Your account and all data have been deleted.');
@@ -111,13 +104,12 @@
 	}
 
 	// --- RESUME ACTION FUNCTIONS ---
+	// (These functions are unchanged)
 	async function saveResume() {
-		// ... (function logic is unchanged)
 		if (isSaving || !isBuilderPage) return;
 		const resumeId = $page.params.id;
 		const { supabase } = $page.data;
 		if (!resumeId || !supabase) return;
-
 		isSaving = true;
 		try {
 			const currentData = get(resumeData);
@@ -134,16 +126,34 @@
 		}
 	}
 
+	// --- THIS FUNCTION IS UPDATED ---
 	async function downloadPDF() {
-		// ... (function logic is unchanged)
 		if (isDownloading) return;
 		isDownloading = true;
+
+		const element = document.getElementById('resume-preview-paper');
+		if (!element) {
+			alert('Resume content element not found!');
+			isDownloading = false;
+			return;
+		}
+
+		// 1. Save original styles
+		const originalWidth = element.style.width;
+		const originalMaxWidth = element.style.maxWidth;
+
+		// 2. Apply fixed width for high-quality capture (based on your desktop CSS)
+		element.style.width = '650px';
+		element.style.maxWidth = '650px';
+
 		try {
-			const element = document.getElementById('resume-preview-paper');
-			if (!element) throw new Error('Resume content element not found!');
 			const filename = `${get(resumeData).basicInfo.name.replace(/ /g, '_')}_Resume.pdf`;
+
+			// 3. Run html2canvas on the temporarily resized element
 			const canvas = await html2canvas(element, { scale: 2, useCORS: true });
 			const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+			// 4. Create PDF with the new canvas dimensions (which are now based on 650px)
 			const pdf = new jsPDF({
 				orientation: 'portrait',
 				unit: 'px',
@@ -156,6 +166,10 @@
 			console.error('Failed to generate PDF:', error);
 			alert('Sorry, an error occurred while generating the PDF.');
 		} finally {
+			// 5. CRITICAL: Restore original styles so the UI isn't broken
+			element.style.width = originalWidth;
+			element.style.maxWidth = originalMaxWidth;
+
 			isDownloading = false;
 		}
 	}
@@ -251,6 +265,14 @@
 						<Download size={16} />
 						<span>{isDownloading ? 'Downloading...' : 'Download'}</span>
 					</button>
+
+					<button
+						class="nav-action-btn tablet-theme-btn"
+						on:click={toggleThemeSidebar}
+					>
+						<Palette size={16} />
+						<span>Themes</span>
+					</button>
 				</div>
 			{/if}
 		</div>
@@ -264,6 +286,16 @@
 							aria-label="Open profile menu"
 							on:click={() => (isMenuOpen = !isMenuOpen)}
 						>
+							<div class="username">
+								{#if $page.data.session?.user}
+									{($page.data.session.user.user_metadata &&
+									$page.data.session.user.user_metadata.full_name)
+										? $page.data.session.user.user_metadata.full_name
+										: $page.data.session.user.email}
+								{:else}
+									Account
+								{/if}
+							</div>
 							<div class="avatar default-avatar">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -274,16 +306,6 @@
 									<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
 									<circle cx="12" cy="7" r="4" />
 								</svg>
-							</div>
-							<div class="username">
-								{#if $page.data.session?.user}
-									{($page.data.session.user.user_metadata &&
-									$page.data.session.user.user_metadata.full_name)
-										? $page.data.session.user.user_metadata.full_name
-										: $page.data.session.user.email}
-								{:else}
-									Account
-								{/if}
 							</div>
 						</button>
 						{#if isMenuOpen}
@@ -318,9 +340,9 @@
 		box-sizing: border-box;
 		display: flex;
 		align-items: center;
-		position: sticky; /* Make it sticky */
+		position: sticky;
 		top: 0;
-		z-index: 50; /* Ensure it's above page content but below modals */
+		z-index: 50;
 	}
 	.nav-content {
 		width: 100%;
@@ -343,7 +365,7 @@
 		text-decoration: none;
 		color: var(--text-headings);
 		font-weight: 500;
-		flex-shrink: 0; /* Prevent logo from shrinking */
+		flex-shrink: 0;
 	}
 	.separator {
 		height: 24px;
@@ -383,6 +405,13 @@
 		background: none;
 		border: none;
 		cursor: pointer;
+	}
+	.avatar-with-name,
+	.default-avatar {
+		font-family: DMSans, sans-serif;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.75rem;
 	}
 	.dropdown-menu {
 		position: absolute;
@@ -428,7 +457,22 @@
 		font-size: 0.9rem;
 	}
 	.nav-button {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 1rem;
+		border: 1px solid var(--border-color);
+		background-color: transparent;
+		color: var(--text-secondary);
+		border-radius: 6px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s;
 		font-size: 0.9rem;
+	}
+	.nav-button:hover:not(:disabled) {
+		background-color: var(--background-input);
+		color: var(--text-primary);
 	}
 
 	/* --- Icon Button Base Style --- */
@@ -567,32 +611,86 @@
 		filter: brightness(90%);
 	}
 
-	/* --- RESPONSIVE MEDIA QUERY --- */
-	@media (max-width: 768px) {
+	/* --- Tablet-only button --- */
+	.tablet-theme-btn {
+		display: none; /* Hidden by default */
+	}
+
+	/* --- RESPONSIVE MEDIA QUERIES --- */
+
+	/* --- Mobile (Default to 767px) --- */
+	@media (max-width: 767px) {
 		.navbar {
-			padding: 0 1rem; /* Less padding on mobile */
+			padding: 0 1rem;
 		}
 		.desktop-nav {
-			display: none; /* Hide desktop nav */
+			display: none;
 		}
 		.hamburger-btn {
-			display: block; /* Show hamburger button */
+			display: block;
+		}
+		.tablet-theme-btn {
+			display: none; /* Hide themes button */
 		}
 		.nav-left {
-			gap: 0.75rem; /* Reduce gap on left side */
+			gap: 0.75rem;
 		}
 		.builder-actions {
-			gap: 0.75rem; /* Reduce gap for action buttons */
+			gap: 0.75rem;
 		}
-		/* Hide text on builder buttons, show icon only */
+		/* Hide text for all action buttons on mobile */
+		.nav-action-btn span {
+			display: none;
+		}
+		.nav-action-btn {
+			padding: 0.5rem;
+		}
+		.separator {
+			margin: 0 0.25rem;
+		}
+	}
+
+	/* --- Tablet (768px - 1199px) --- */
+	@media (min-width: 768px) and (max-width: 1199px) {
+		.tablet-theme-btn {
+			display: inline-flex; /* Show on tablet */
+		}
+		.hamburger-btn {
+			display: none;
+		}
+		.desktop-nav {
+			display: flex;
+		}
+
+		/* --- THIS IS THE FIX --- */
+		/* Hide text on all action buttons for tablet */
 		.nav-action-btn span {
 			display: none;
 		}
 		.nav-action-btn {
 			padding: 0.5rem; /* Make icon buttons smaller */
 		}
-		.separator {
-			margin: 0 0.25rem;
+		.builder-actions {
+			gap: 0.75rem; /* Reduce gap for icon buttons */
+		}
+		/* --- END FIX --- */
+	}
+
+	/* --- Desktop (1200px+) --- */
+	@media (min-width: 1200px) {
+		.tablet-theme-btn {
+			display: none; /* Hide on desktop */
+		}
+		/* This ensures all action button text is visible on desktop */
+		.nav-action-btn span {
+			display: inline;
+		}
+		/* Resets padding for desktop */
+		.nav-action-btn {
+			padding: 0.5rem 1rem;
+		}
+		.builder-actions {
+			gap: 1.5rem; /* Reset gap for desktop */
 		}
 	}
 </style>
