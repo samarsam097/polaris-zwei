@@ -94,7 +94,7 @@
 
     /* --- THIS IS THE NEW STYLE FOR THE ADD BUTTON --- */
     .add-btn {
-        font-family: DMSans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-family);
         width: 100%;
         padding: 0.75rem;
         background-color: transparent;

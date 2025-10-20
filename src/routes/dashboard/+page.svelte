@@ -127,7 +127,7 @@
 					</button>
 					{#if openMenuId === resume.id}
 						<div class="dropdown-menu">
-							<a href="/resume/{resume.id}" class="dropdown-item">Open</a>
+							
 							<button on:click={() => deleteResume(resume.id, resume.name)} class="dropdown-item delete">
 								Delete
 							</button>
@@ -142,6 +142,9 @@
 </div>
 
 <style>
+	*{
+		font-family: var( --font-family );
+	}
 	.dashboard-container {
 		max-width: 1000px;
 		margin: 2rem auto;

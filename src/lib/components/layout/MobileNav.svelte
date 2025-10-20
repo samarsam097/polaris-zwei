@@ -72,7 +72,7 @@
 		padding: 0.5rem;
 		border-radius: 6px;
 		width: 80px;
-		font-family: inherit;
+	font-family: var(--font-family);
 		cursor: pointer;
 		transition: color 0.2s;
 	}

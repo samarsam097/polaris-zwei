@@ -55,7 +55,7 @@
         border-radius: 6px;
         padding: 0.75rem;
         font-size: 1rem;
-        font-family: inherit;
+    font-family: var(--font-family);
         transition: border-color 0.2s, box-shadow 0.2s;
     }
 
@@ -79,7 +79,7 @@
         border: 1px solid var(--border-color);
         border-radius: 8px;
         cursor: pointer;
-        font-family: 'DMSans', sans-serif;
+    font-family: var(--font-family);
         font-weight: 600;
         display: inline-flex;
         align-items: center;

@@ -89,8 +89,8 @@
 		border: 1px solid var(--border-color);
 		padding: 0.75rem;
 		border-radius: 8px;
-		font-family: 'DMSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
-			sans-serif;
+	font-family: var(--font-family);
+			
 		font-size: 1rem;
 		box-sizing: border-box;
 	}
@@ -107,7 +107,7 @@
 		border: 1px solid var(--accent-primary);
 		border-radius: 8px;
 		cursor: pointer;
-		font-family: 'DMSans', sans-serif;
+		font-family: var(--font-family);
 		font-weight: 600;
 		display: inline-flex;
 		align-items: center;

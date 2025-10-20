@@ -81,7 +81,7 @@
         color: var(--accent-secondary); /* Green text color */
         border: 1px solid var(--border-color);
         border-radius: 6px;
-		font-family: 'DMSans', sans-serif;
+        font-family: var(--font-family);
         font-weight: bold;
         cursor: pointer;
         transition: all 0.2s;

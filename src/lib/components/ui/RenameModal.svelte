@@ -35,6 +35,9 @@
 {/if}
 
 <style>
+	*{
+		font-family: var( --font-family);
+	}
 	.modal-backdrop {
 		position: fixed;
 		top: 0;
@@ -60,7 +63,7 @@
 		margin-top: 0;
 	}
 	input {
-		width: 100%;
+		width: 93%;
 		padding: 0.75rem;
 		font-size: 1rem;
 		border: 1px solid #ccc;

@@ -104,7 +104,7 @@
         background: var(--background-input);
         color: var(--text-primary);
         border: 1px solid var(--border-color);
-        font-family: 'DMSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-family);
     }
 
     .sawal:focus,
@@ -216,7 +216,7 @@
 
     .delete-btn,
     .add-btn {
-        font-family: 'DMSans', sans-serif;
+    font-family: var(--font-family);
         padding: 0.5rem;
         width: 100%;
         border-radius: 8px;

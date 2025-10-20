@@ -176,7 +176,7 @@
 		border-radius: 6px;
 		cursor: pointer;
 		font-weight: 500;
-		font-family: 'Roboto', sans-serif;
+		font-family: var(--font-family);
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;

@@ -103,7 +103,7 @@
 		border-radius: 8px;
 		outline: none;
 		transition: box-shadow 0.12s, border-color 0.12s;
-		font-family: 'DMSans', sans-serif;
+		font-family: var(--font-family);
 		font-size: 0.95rem;
 		height: auto; /* Remove fixed height */
 	}
@@ -149,7 +149,7 @@
 		padding: 8px 12px;
 		border-radius: 8px;
 		cursor: pointer;
-		font-family: 'DMSans', sans-serif;
+		font-family: var(--font-family);
 	}
 
 	.ats-warning {

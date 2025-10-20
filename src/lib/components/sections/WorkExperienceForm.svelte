@@ -127,7 +127,7 @@
         border-radius: 6px;
         padding: 0.75rem;
         font-size: 1rem;
-        font-family: inherit;
+    font-family: var(--font-family);
         transition: border-color 0.2s, box-shadow 0.2s;
     }
 
@@ -210,7 +210,7 @@
 
     .delete-btn,
     .add-btn {
-        font-family: 'DMSans', sans-serif;
+    font-family: var(--font-family);
         padding: 0.5rem;
         width: 100%;
         border-radius: 8px;

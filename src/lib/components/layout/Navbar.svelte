@@ -360,6 +360,7 @@
 		align-items: center;
 		gap: 1.5rem;
 	}
+	.nav-right { margin-left: auto; justify-content: flex-end; }
 	.logo {
 		font-size: 1.5rem;
 		text-decoration: none;
@@ -405,11 +406,17 @@
 		background: none;
 		border: none;
 		cursor: pointer;
-	}
-	.avatar-with-name,
-	.default-avatar {
-		font-family: DMSans, sans-serif;
 		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.25rem 0.4rem;
+	}
+	/* Ensure username is left of avatar and both align horizontally */
+	.avatar-button .username { order: 0; margin-right: 0.5rem; }
+	.avatar-button .avatar { order: 1; }
+	.username,
+	.default-avatar {
+		font-family: var(--font-family);
 		align-items: center;
 		gap: 0.75rem;
 	}
@@ -446,12 +453,15 @@
 		margin: 0.5rem 0;
 	}
 	.default-avatar {
-		width: 36px;
-		height: 36px;
+		width: 44px; /* increased size */
+		height: 44px; /* increased size */
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 	}
 	.user-icon {
-		width: 20px;
-		height: 20px;
+		width: 22px; /* slightly larger icon */
+		height: 22px;
 	}
 	.username {
 		font-size: 0.9rem;
