@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import { browser } from '$app/environment'; // 1. Import the browser check
+	import { browser } from '$app/environment';
 
 	export let open = false;
 	let email = '';
 	let password = '';
 
-	// 2. Only create the dispatcher if we are in the browser.
 	const dispatch = browser ? createEventDispatcher() : () => {};
 
 	function handleGoogleLogin() {
@@ -22,13 +21,14 @@
 		}
 	}
 </script>
+
 {#if open}
 	<div
-  class="modal-backdrop"
-  on:click={() => dispatch('close')}
-  role="button"
-  tabindex="0"
-/>
+		class="modal-backdrop"
+		on:click={() => dispatch('close')}
+		role="button"
+		tabindex="0"
+	/>
 	<div class="modal-content" transition:fly={{ duration: 300, y: 20 }}>
 		<header class="modal-header">
 			<h2>Sign In</h2>
@@ -42,6 +42,15 @@
 			<div class="email-form">
 				<input type="email" placeholder="Email address" bind:value={email} />
 				<input type="password" placeholder="Password" bind:value={password} />
+
+				<!-- --- NEW FORGOT PASSWORD LINK --- -->
+				<div class="form-actions">
+					<button class="forgot-password-btn" on:click={() => dispatch('forgotPassword')}>
+						Forgot Password?
+					</button>
+				</div>
+				<!-- --- END NEW LINK --- -->
+
 				<button on:click={handleEmailSignIn} class="action-btn">Sign In</button>
 			</div>
 			<div class="separator">OR</div>
@@ -54,6 +63,9 @@
 {/if}
 
 <style>
+	*{
+		font-family: var( --font-family);
+	}
 	.modal-backdrop {
 		position: fixed;
 		inset: 0;
@@ -75,7 +87,6 @@
 		color: #111;
 	}
 
-	/* --- HEADER ALIGNMENT FIX --- */
 	.modal-header {
 		position: relative;
 		padding: 1.5rem;
@@ -112,12 +123,11 @@
 		color: #aaa;
 	}
 
-	/* --- BODY ALIGNMENT FIX --- */
 	.modal-body {
 		padding: 1.5rem;
 		display: flex;
 		flex-direction: column;
-		align-items: center; /* This centers the Google button */
+		align-items: center;
 	}
 
 	.email-form {
@@ -146,6 +156,24 @@
 		font-size: 1rem;
 		margin-top: 0.25rem;
 	}
+
+	/* --- NEW STYLES --- */
+	.form-actions {
+		display: flex;
+		justify-content: flex-end; /* Aligns the button to the right */
+		margin-bottom: 0.5rem;
+	}
+
+	.forgot-password-btn {
+		background: none;
+		border: none;
+		padding: 0;
+		color: #007bff;
+		font-size: 0.85rem;
+		cursor: pointer;
+		text-decoration: underline;
+	}
+	/* --- END NEW STYLES --- */
 
 	.separator {
 		width: 100%;

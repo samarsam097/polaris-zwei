@@ -44,6 +44,9 @@
 {/if}
 
 <style>
+	*{
+		font-family: var( --font-family);
+	}
 	.modal-backdrop {
 		position: fixed;
 		inset: 0;
