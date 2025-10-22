@@ -205,11 +205,12 @@
 		background-color: var(--background-main);
 	}
 
-	/* --- 1. HERO STYLES (Mobile First) --- */
+	/* --- 1. HERO STYLES (Mobile First - RESPONSIVE FIXES) --- */
 	.homepage-hero {
 		position: relative;
 		min-height: calc(100vh - 65px);
 		width: 100%;
+		/* IMPORTANT: Added overflow: hidden to contain elements */
 		overflow: hidden;
 		background-color: var(--hero-bg);
 		color: var(--hero-text-primary);
@@ -217,11 +218,12 @@
 		align-items: center;
 		justify-content: center;
 		padding: 3rem 1.5rem;
+		box-sizing: border-box; /* Ensure padding is included */
 	}
 
 	.hero-layout {
 		display: grid;
-		grid-template-columns: 1fr;
+		grid-template-columns: 1fr; /* Single column */
 		gap: 3rem;
 		width: 100%;
 		max-width: 1200px;
@@ -231,12 +233,13 @@
 		text-align: center;
 		animation: slideInLeft 1s ease-out forwards;
 		opacity: 0;
+		z-index: 1; /* Ensure text is above visual if overlap occurs */
 	}
 
 	@keyframes slideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
 
 	.hero-content h1 {
-		font-size: 2.5rem;
+		font-size: clamp(2rem, 6vw, 2.5rem); /* Responsive font size */
 		font-weight: 600;
 		line-height: 1.2;
 		letter-spacing: -1px;
@@ -245,7 +248,7 @@
 	}
 
 	.hero-content p {
-		font-size: 1rem;
+		font-size: clamp(0.9rem, 4vw, 1rem); /* Responsive font size */
 		color: var(--hero-text-secondary);
 		line-height: 1.6;
 		margin: 0 0 2rem;
@@ -274,43 +277,46 @@
 	.hero-button.secondary { background-color: var(--hero-button-secondary-bg); color: var(--hero-button-secondary-text); border: 1px solid var(--hero-border); }
 	.hero-button.secondary:hover { background-color: var(--hero-card-bg); }
 
-	/* --- Hero Visual (Image Stack - Mobile First - STACK VISIBLE ON OTHER SIDE) --- */
+	/* --- Hero Visual (Image Stack - RESPONSIVE FIXES) --- */
 	.hero-visual {
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		perspective: 1000px;
+		perspective: 800px; /* Reduced perspective */
 		position: relative;
-		height: 300px;
+		min-height: 250px; /* Ensure space for stack */
+		/* Remove fixed height, let content define it */
 	}
 
 	.templates-stack-wrapper {
 		position: relative;
-		width: clamp(200px, 70vw, 300px);
+		/* Adjusted clamp: min 180px, preferred 60vw, max 280px */
+		width: clamp(180px, 60vw, 280px);
 		aspect-ratio: 210 / 297;
 		transform-style: preserve-3d;
-		/* Overall stack angle (same as before) */
-		transform: rotateY(-5deg) scale(0.9);
+		/* Simpler initial state for mobile */
+		transform: rotateY(-3deg) scale(0.95);
 		opacity: 0;
-		animation: fadeInStack 1.5s ease-out forwards;
+		animation: fadeInStackMobile 1.5s ease-out forwards;
 		transition: transform 0.4s ease, box-shadow 0.4s ease;
 	}
 
-	@keyframes fadeInStack {
-		from { opacity: 0; transform: rotateY(-10deg) scale(0.8); }
-		to { opacity: 1; transform: rotateY(-5deg) scale(1); }
+	@keyframes fadeInStackMobile {
+		from { opacity: 0; transform: rotateY(-5deg) scale(0.85); }
+		to { opacity: 1; transform: rotateY(-3deg) scale(1); }
 	}
 
 	.templates-stack-wrapper:hover {
-		transform: rotateY(-2deg) scale(1.06);
-		box-shadow: 0 30px 60px -15px rgba(0,0,0,0.6);
+		/* Reduced hover effect for mobile */
+		transform: rotateY(-1deg) scale(1.03);
+		box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
 	}
-	/* CHANGED: Reversed X-offsets for hover - back to positive X */
+	/* Reduced offsets for hover on mobile */
 	.templates-stack-wrapper:hover .layer-back {
-		transform: translate3d(20px, -10px, -40px) rotateY(-8deg); /* Positive X */
+		transform: translate3d(12px, -6px, -25px) rotateY(-5deg);
 	}
 	.templates-stack-wrapper:hover .layer-middle {
-		transform: translate3d(10px, -5px, -20px) rotateY(-4deg); /* Positive X */
+		transform: translate3d(6px, -3px, -12px) rotateY(-2deg);
 	}
 	.templates-stack-wrapper:hover .layer-front {
 		transform: translate3d(0px, 0px, 0px) rotateY(0deg);
@@ -322,27 +328,29 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		border-radius: 8px;
+		border-radius: 6px; /* Slightly smaller radius */
 		overflow: hidden;
 		background-color: white;
-		box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+		box-shadow: 0 8px 15px rgba(0,0,0,0.25); /* Adjusted shadow */
 		border: 1px solid var(--hero-border);
 		transition: transform 0.4s ease;
 	}
 
-	/* CHANGED: Individual layer transforms - reversed X-offsets (positive X) */
+	/* Reduced initial offsets for mobile */
 	.layer-back {
-		transform: translate3d(30px, -15px, -60px) rotateY(-12deg); /* Positive X, increased gap */
-		z-index: 1;
+		transform: translate3d(20px, -10px, -40px) rotateY(-8deg);
 	}
 	.layer-middle {
-		transform: translate3d(15px, -8px, -30px) rotateY(-6deg); /* Positive X, increased gap */
-		z-index: 2;
+		transform: translate3d(10px, -5px, -20px) rotateY(-4deg);
 	}
 	.layer-front {
 		transform: translate3d(0, 0, 0) rotateY(0deg);
 		z-index: 3;
 	}
+	/* Ensure z-index is set */
+	.layer-middle { z-index: 2; }
+	.layer-back { z-index: 1; }
+
 
 	.template-img {
 		width: 100%;
@@ -355,13 +363,18 @@
 	/* --- Tablet & Desktop Overrides --- */
 	@media (min-width: 768px) {
 		.homepage-hero { padding: 4rem 2rem; }
-		.hero-content h1 { font-size: 3rem; }
-		.hero-content p { font-size: 1.125rem; }
-		.hero-visual { height: 400px; }
+		.hero-content h1 { font-size: clamp(2.5rem, 7vw, 3rem); } /* Adjust responsive H1 */
+		.hero-content p { font-size: clamp(1rem, 4vw, 1.125rem); } /* Adjust responsive P */
+
+		.hero-visual {
+			min-height: 400px; /* Restore minimum height */
+			perspective: 1000px; /* Restore perspective */
+		}
 
 		.templates-stack-wrapper {
+			/* Restore clamp values for larger screens */
 			width: clamp(250px, 50vw, 400px);
-			/* Overall stack angle (same as before) */
+			/* Restore more pronounced tilt */
 			transform: rotateY(-15deg) scale(0.9);
 			animation-name: fadeInStackTablet;
 			box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
@@ -372,27 +385,40 @@
 		}
 
 		.templates-stack-wrapper:hover {
+			/* Restore tablet/desktop hover */
 			transform: rotateY(-10deg) scale(1.04);
 			box-shadow: 0 35px 70px -15px rgba(0,0,0,0.7);
 		}
 
-		/* CHANGED: Adjust individual layer transforms for tablet+ - reversed X-offsets (positive X) */
+		/* Restore tablet/desktop layer transforms */
 		.layer-back {
-			transform: translate3d(40px, -20px, -80px) rotateY(-15deg); /* Positive X, increased gap */
+			transform: translate3d(40px, -20px, -80px) rotateY(-15deg);
 		}
 		.layer-middle {
-			transform: translate3d(20px, -10px, -40px) rotateY(-8deg); /* Positive X, increased gap */
+			transform: translate3d(20px, -10px, -40px) rotateY(-8deg);
 		}
 		.layer-front {
 			transform: translate3d(0, 0, 0) rotateY(0deg);
 		}
+
+		/* Restore hover offsets for tablet/desktop */
+		.templates-stack-wrapper:hover .layer-back {
+			transform: translate3d(20px, -10px, -40px) rotateY(-8deg);
+		}
+		.templates-stack-wrapper:hover .layer-middle {
+			transform: translate3d(10px, -5px, -20px) rotateY(-4deg);
+		}
 	}
 
 	@media (min-width: 992px) {
-		.hero-layout { grid-template-columns: minmax(0, 420px) 1fr; align-items: center; gap: 4rem; }
+		.hero-layout {
+			grid-template-columns: minmax(400px, 1fr) 1fr; /* Adjusted columns */
+			align-items: center;
+			gap: 4rem;
+		}
 		.hero-content { text-align: left; }
 		.hero-actions { justify-content: flex-start; }
-		.hero-visual { height: 500px; }
+		.hero-visual { min-height: 500px; } /* Further increase min-height */
 	}
 
 

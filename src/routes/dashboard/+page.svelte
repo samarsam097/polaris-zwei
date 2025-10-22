@@ -94,7 +94,7 @@
 <div class="dashboard-container">
 	<header>
 		<h1>Your Resumes</h1>
-		<button on:click={handleCreateNew}>+ Create New Resume</button>
+		<button class="create-new-btn" on:click={handleCreateNew}>+ Create New Resume</button>
 	</header>
 
 	{#if isLoading}
@@ -142,62 +142,91 @@
 </div>
 
 <style>
-	*{
-		font-family: var( --font-family );
+	/* REMOVED the :root block, variables from +layout.svelte will be used */
+
+	* {
+		font-family: var(--font-family); /* Ensure you have --font-family in layout */
+		box-sizing: border-box;
 	}
+
 	.dashboard-container {
 		max-width: 1000px;
 		margin: 2rem auto;
-		padding: 2rem;
-		background-color: #ffffff;
-		color: #111827;
+		padding: 1rem;
+		background-color: var(--background-sidebar); /* Using layout var */
+		color: var(--text-primary); /* Using layout var */
 		border-radius: 8px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 	}
 
 	header {
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 2rem;
+		gap: 1rem;
 	}
 
-	button {
-		padding: 0.5rem 1rem;
-		font-size: 1rem;
-		background-color: #007bff;
-		color: white;
+	header h1 {
+		color: var(--text-headings); /* Using layout var */
+		font-size: 1.75rem;
+		margin: 0;
+		flex-grow: 1;
+	}
+
+	.create-new-btn {
+		padding: 0.6rem 1rem;
+		font-size: 0.9rem;
+		background-color: var(--accent-primary); /* Using layout var */
+		color: var(--text-inverted); /* Using layout var */
 		border: none;
 		border-radius: 6px;
 		cursor: pointer;
+		font-weight: 500;
+		white-space: nowrap;
+		transition: background-color 0.2s, filter 0.2s; /* Added filter transition */
+	}
+	.create-new-btn:hover {
+		filter: brightness(90%);
 	}
 
 	.resume-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-		gap: 1.5rem;
+		grid-template-columns: 1fr;
+		gap: 1rem;
 	}
 
 	.resume-card {
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		border: 1px solid #ddd;
+		border: 1px solid var(--border-color); /* Using layout var */
 		border-radius: 8px;
 		transition: all 0.2s;
+		background-color: var(--background-sidebar);
 	}
 	.resume-card:hover {
-		border-color: #007bff;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		border-color: var(--accent-primary); /* Using layout var */
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 	}
+
 	.card-content {
-		padding: 1.5rem;
+		padding: 1rem;
 		text-decoration: none;
 		color: inherit;
 		flex-grow: 1;
 	}
 	.card-content h2 {
 		margin-top: 0;
+		margin-bottom: 0.5rem;
+		font-size: 1.1rem;
+		color: var(--text-headings); /* Using layout var */
+	}
+	.card-content p {
+		font-size: 0.85rem;
+		color: var(--text-secondary); /* Using layout var */
+		margin: 0;
 	}
 
 	.menu-trigger {
@@ -209,18 +238,24 @@
 		padding: 0.5rem;
 		cursor: pointer;
 		border-radius: 50%;
-		color: #555;
+		color: var(--text-secondary); /* Using layout var */
+		line-height: 0;
+	}
+	.menu-trigger svg {
+		width: 20px;
+		height: 20px;
 	}
 	.menu-trigger:hover {
-		background-color: #f0f0f0;
+		background-color: var(--background-main); /* Using layout var */
+		color: var(--text-primary); /* Using layout var */
 	}
 
 	.dropdown-menu {
 		position: absolute;
 		top: 2.5rem;
 		right: 0.5rem;
-		background-color: white;
-		border: 1px solid #ddd;
+		background-color: var(--background-sidebar); /* Using layout var */
+		border: 1px solid var(--border-color); /* Using layout var */
 		border-radius: 8px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 		z-index: 10;
@@ -235,14 +270,57 @@
 		border: none;
 		text-align: left;
 		cursor: pointer;
-		font-size: 1rem;
-		color: #333;
+		font-size: 0.9rem;
+		color: var(--text-primary); /* Using layout var */
 		text-decoration: none;
 	}
 	.dropdown-item:hover {
-		background-color: #f5f5f5;
+		background-color: var(--background-main); /* Using layout var */
 	}
 	.dropdown-item.delete {
-		color: #dc3545;
+		color: var(--accent-destructive); /* Using layout var */
 	}
+	.dropdown-item.delete:hover {
+		background-color: #fee2e2; /* Light red background on hover */
+	}
+
+	/* Loading/Empty state */
+	.loading-message,
+	.empty-message {
+		color: var(--text-secondary); /* Using layout var */
+		text-align: center;
+		padding: 2rem 0;
+	}
+
+
+	/* --- Tablet & Desktop Overrides --- */
+	@media (min-width: 640px) { /* sm breakpoint */
+		.dashboard-container {
+			padding: 2rem;
+		}
+		header h1 {
+			font-size: 2rem;
+		}
+		.create-new-btn {
+			padding: 0.75rem 1.5rem;
+			font-size: 1rem;
+		}
+		.resume-grid {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 1.5rem;
+		}
+		.card-content {
+			padding: 1.5rem;
+		}
+		.card-content h2 {
+			font-size: 1.25rem;
+		}
+	}
+
+	@media (min-width: 1024px) { /* lg breakpoint */
+		.resume-grid {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+
 </style>
