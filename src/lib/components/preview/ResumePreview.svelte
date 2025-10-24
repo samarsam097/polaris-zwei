@@ -159,7 +159,7 @@
 		pointer-events: none; /* Allows interaction with content below */
 		z-index: 5;
 		/* Repeating text watermark using SVG background */
-		background-image: url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300px' height='150px'><text x='50%' y='50%' font-family='Arial, sans-serif' font-size='24' fill='rgba(0,0,0,0.08)' transform='rotate(-45 150 75)' text-anchor='middle'>Folio.ai Preview</text></svg>");
+		background-image: url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300px' height='150px'><text x='50%' y='50%' font-family='Arial, sans-serif' font-size='24' fill='rgba(0,0,0,0.08)' transform='rotate(-45 150 75)' text-anchor='middle'>Resu.ninja Preview</text></svg>");
 		background-repeat: repeat;
 		background-size: 300px 150px; /* Adjust size/spacing */
 	}

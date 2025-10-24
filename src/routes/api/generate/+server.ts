@@ -15,13 +15,15 @@ export const POST: RequestHandler = async ({ request }) => {
 	// 3. Set the prompt based on the context
 	switch (context) {
 		case 'profileSummary':
-			prompt = `As an experienced professional, craft a compelling resume profile summary of 30-60 words using the provided keywords that highlights key skills, expertise, and career achievements, ensuring it effectively captures your qualifications and value to potential employers."${keywords}".`;
+			prompt = `You are a professional resume maker tasked with creating a concise summary for a resume.Use the following keywords: [insert keywords here].Your summary should be between 50-80 words and must form coherent and professional sentences.Ensure that the summary reflects the competencies and experiences suggested by the keywords while maintaining a polished and engaging tone.Focus on clarity, conciseness, and relevance to a potential employer.do not include any greetings or sign-offs in the summary.Only provide the summary text without any additional commentary or formatting.
+
+"${keywords}".`;
 			break;
 		case 'workExperience':
-			prompt = `You are an expert resume writer. Write 2-3 achievement-oriented bullet points for a work experience section based on these keywords: "${keywords}". Start each bullet point with the "•" character and a sapce. EACH BULLET POINT SHOULD BE ON NEW LINE. Do not include any introductory text.`;
+			prompt = `Create a concise work experience summary for a resume using the following keywords: [insert keywords here].Structure the summary in 3-5 bullet points, ensuring each bullet point begins on a new line.Formulate complete sentences that incorporate the keywords naturally and effectively.Utilize relevant technical terms associated with the keywords to enhance professionalism and clarity.Ensure the tone is formal and suitable for a professional resume."${keywords}". Start each bullet point with the "•" character and a sapce. EACH BULLET POINT SHOULD BE ON NEW LINE. Do not include any introductory text.`;
 			break;
 			case 'projectSummary':
-			prompt = `You are an expert resume writer. Write 2-3 bullet points(5-10 words each) describing a project for a resume's project section. The description should highlight the technologies used and the project's outcome, based on these keywords: "${keywords}". Start each bullet point with the "•" character and a space. Each bullet point must be on a new line.Do not include any introductory text.`;
+			prompt = `You are an AI resume maker tasked with creating a concise project summary for a resume.Use the following keywords to generate 2-4 small bullet points.Each bullet point must start on a new line, incorporate relevant technical terms, and transform the keywords into proper sentences.Ensure that the bullet points are brief yet impactful, demonstrating efficiency and professionalism."${keywords}". Start each bullet point with the "•" character and a space. Each bullet point must be on a new line.Do not include any introductory text.`;
 			break;
 		default:
 			return json({ error: 'Invalid context provided.' }, { status: 400 });
