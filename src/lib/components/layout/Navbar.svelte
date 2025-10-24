@@ -128,7 +128,7 @@
 				if (error?.message?.includes('Insufficient credits') || data?.error?.includes('Insufficient credits') || (error as any)?.context?.status === 402) {
 					alert('Download failed: Insufficient credits. Please purchase more.');
 					const userId = session.user.id;
-					const basePaymentLink = 'YOUR_STRIPE_PAYMENT_LINK_URL_HERE'; // <-- REPLACE THIS!
+					const basePaymentLink = 'https://buy.stripe.com/test_14A7sEbTw4kt4429GPgnK00'; // <-- REPLACE THIS!
 					const redirectUrl = `${basePaymentLink}?client_reference_id=${userId}`;
 					window.location.href = redirectUrl;
 				} else {
