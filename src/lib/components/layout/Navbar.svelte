@@ -187,16 +187,70 @@
 	// --- Internal download functions (unchanged) ---
 	async function downloadPDFInternal() {
 		const element = document.getElementById('resume-preview-paper');
-		if (!element) { alert('Preview not found!'); isDownloading = false; return; }
-		const originalWidth = element.style.width; const originalMaxWidth = element.style.maxWidth;
-		element.style.width = '650px'; element.style.maxWidth = '650px';
+		if (!element) {
+			alert('Preview element not found!');
+			isDownloading = false;
+			return;
+		}
+
+		// --- 1. Store original inline styles ---
+		// We only need to store styles we plan to change directly
+		const originalInlineWidth = element.style.width;
+		const originalInlineMaxWidth = element.style.maxWidth;
+		// Store original CSS classes if needed (e.g., if you have classes controlling width/layout)
+		// const originalClasses = element.className;
+
+		// --- Add a temporary class to override responsive styles ---
+		element.classList.add('pdf-capture-override');
+		// Optionally force reflow - sometimes helps styles apply faster
+		// void element.offsetWidth;
+		console.log('Applied temporary override class.');
+
+		// Small delay to allow browser repaint with new class potentially affecting layout
+		await new Promise(resolve => setTimeout(resolve, 100));
+
 		try {
-			const filename = `${get(resumeData).basicInfo.name.replace(/ /g, '_')}_Resume.pdf`;
-			const canvas = await html2canvas(element, { scale: 2, useCORS: true }); const imgData = canvas.toDataURL('image/jpeg', 0.98);
-			const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
-			pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height); pdf.save(filename);
-		} catch (error: any) { console.error('PDF Error:', error); alert(`PDF Error: ${error.message}`); }
-		finally { element.style.width = originalWidth; element.style.maxWidth = originalMaxWidth; isDownloading = false; }
+			const filename = `${get(resumeData)?.basicInfo?.name?.replace(/ /g, '_') || 'resume'}_Resume.pdf`;
+
+			// --- 2. Capture the ORIGINAL element with the override class ---
+			console.log(`Capturing element with scroll dimensions: ${element.scrollWidth}x${element.scrollHeight}`);
+			const canvas = await html2canvas(element, { // Target the original element
+				scale: 2,
+				useCORS: true,
+				// Allow html2canvas to determine dimensions from the styled element
+			});
+
+			console.log('Canvas captured. Dimensions:', canvas.width, 'x', canvas.height);
+
+			if (!canvas.width || !canvas.height || canvas.width <= 0 || canvas.height <= 0) {
+				throw new Error(`Invalid canvas dimensions: ${canvas.width}x${canvas.height}`);
+			}
+
+			const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+			// --- 3. Generate PDF ---
+			const pdf = new jsPDF({
+				orientation: 'portrait',
+				unit: 'px',
+				format: [canvas.width, canvas.height]
+			});
+
+			pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+			pdf.save(filename);
+			console.log('PDF saved.');
+
+		} catch (error: any) {
+			console.error('PDF Generation Error:', error);
+			alert(`Could not generate PDF: ${error.message}`);
+		} finally {
+			// --- 4. CRITICAL: Remove the override class ---
+			console.log('Removing override class...');
+			element.classList.remove('pdf-capture-override');
+			// Restore any specific inline styles if needed (less common with class approach)
+			// element.style.width = originalInlineWidth;
+			// element.style.maxWidth = originalInlineMaxWidth;
+			isDownloading = false; // Reset state
+		}
 	}
 	function downloadJSONInternal() {
 		try {
@@ -214,7 +268,7 @@
 <div class="mobile-menu-overlay" class:open={isMobileMenuOpen} on:click={closeMobileMenu} />
 <div class="mobile-menu" class:open={isMobileMenuOpen}>
 	<div class="mobile-menu-header">
-		<a href={logoHref} class="logo" on:click={closeMobileMenu}><strong>Folio</strong>.ai</a>
+		<a href={logoHref} class="logo" on:click={closeMobileMenu}><strong>Resu</strong>.ninja</a>
 		<button on:click={closeMobileMenu} class="icon-button" aria-label="Close menu"><X size={24} /></button>
 	</div>
 	<div class="mobile-menu-content">

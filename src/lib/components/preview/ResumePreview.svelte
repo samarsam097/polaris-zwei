@@ -220,4 +220,31 @@
 			background-image: url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250px' height='125px'><text x='50%' y='50%' font-family='Arial, sans-serif' font-size='20' fill='rgba(0,0,0,0.08)' transform='rotate(-45 125 62.5)' text-anchor='middle'>Folio.ai Preview</text></svg>");
 		}
 	}
+	:global(#resume-preview-paper.pdf-capture-override) {
+	/* Force desktop width and layout */
+	width: 650px !important;
+	max-width: 650px !important;
+	margin: 0 auto !important; /* Center it if needed */
+	transform: none !important; /* Remove any mobile scaling */
+	box-shadow: none !important; /* Remove shadow temporarily */
+	/* Override mobile-specific styles that might shrink content */
+	padding: 2rem !important; /* Ensure desktop padding */
+	min-height: 920px !important; /* Ensure minimum desktop height */
+}
+
+/* Ensure child elements also render correctly - add more specific overrides if needed */
+:global(#resume-preview-paper.pdf-capture-override .resume-header) {
+	flex-direction: row !important; /* Override mobile column layout */
+	align-items: center !important;
+}
+:global(#resume-preview-paper.pdf-capture-override .header-text) {
+	width: auto !important; /* Override mobile full width */
+}
+/* Add overrides for font sizes if they change in mobile media query */
+:global(#resume-preview-paper.pdf-capture-override .theme-classic h1) {
+	font-size: 24pt !important;
+}
+:global(#resume-preview-paper.pdf-capture-override .theme-classic h2) {
+	font-size: 14pt !important;
+}
 </style>
