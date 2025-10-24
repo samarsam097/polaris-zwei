@@ -1,38 +1,46 @@
 <script lang="ts">
     import { resumeData } from '$lib/resumeStore';
-    // 1. Import the dndzone action from the library
     import { dndzone } from 'svelte-dnd-action';
 
-    let newSkill = ''; // This variable will hold the text in the input box
+    let newSkill = '';
 
     function addSkill() {
-        // We don't add the skill if the input is empty or just whitespace
         if (!newSkill.trim()) return;
 
-        // Update the store by adding the new skill to the existing array
-        $resumeData.skills = [...$resumeData.skills, newSkill.trim()];
+        const newSkillObj = {
+            id: crypto.randomUUID(),
+            name: newSkill.trim()
+        };
 
-        // Clear the input box for the next skill
+        // Use a function update to ensure reactivity
+        resumeData.update(currentData => {
+            currentData.skills = [...currentData.skills, newSkillObj];
+            return currentData;
+        });
+
         newSkill = '';
     }
 
-    function deleteSkill(skillToDelete: string) {
-        // We use .filter() to create a new array without the skill we want to remove
-        $resumeData.skills = $resumeData.skills.filter(skill => skill !== skillToDelete);
+    function deleteSkill(skillIdToDelete: string) {
+        resumeData.update(currentData => {
+            currentData.skills = currentData.skills.filter(skill => skill.id !== skillIdToDelete);
+            return currentData;
+        });
     }
 
-    // This allows the user to press 'Enter' to add a skill
     function handleKeydown(event: KeyboardEvent) {
         if (event.key === 'Enter') {
-            event.preventDefault(); // Prevents the form from submitting
+            event.preventDefault();
             addSkill();
         }
     }
     
-    // This function handles the reordering event from the library
     function handleDndConsider(e: CustomEvent) {
-        // Update the store with the new, reordered array of skills
-        $resumeData.skills = e.detail.items;
+        // Update store with reordered items
+        resumeData.update(currentData => {
+            currentData.skills = e.detail.items;
+            return currentData;
+        });
     }
 </script>
 
@@ -44,10 +52,11 @@
         use:dndzone={{ items: $resumeData.skills }}
         on:consider={handleDndConsider}
     >
-        {#each $resumeData.skills as skill (skill)}
+        <!-- Key by skill.id and display skill.name -->
+        {#each $resumeData.skills as skill (skill.id)}
             <div class="skill-tag">
-                {skill}
-                <button class="delete-tag" on:click={() => deleteSkill(skill)}>×</button>
+                {skill.name}
+                <button class="delete-tag" on:click={() => deleteSkill(skill.id)}>×</button>
             </div>
         {/each}
     </div>
@@ -62,6 +71,7 @@
         />
         </div>
 
+    <!-- Make sure this button uses the .add-btn style -->
     <button class="add-btn" on:click={addSkill}>+ Add Skill</button>
 </div>
 
@@ -69,12 +79,10 @@
     h3 {
         color: var(--text-headings);
     }
-
     .skill-input-group {
         display: flex;
         gap: 0.5rem;
     }
-
     .text-input {
         flex-grow: 1;
         background: var(--background-input);
@@ -84,22 +92,20 @@
         border-radius: 6px;
         font-size: 1rem;
     }
-
     .text-input:focus {
         outline: none;
         border-color: var(--border-focus);
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
     
-
-    /* --- THIS IS THE NEW STYLE FOR THE ADD BUTTON --- */
+    /* Using global style for .add-btn, but let's override for the skill-specific style */
     .add-btn {
-    font-family: var(--font-family);
+        font-family: var(--font-family);
         width: 100%;
         padding: 0.75rem;
         background-color: transparent;
-        color: var(--accent-secondary); /* Green text color */
-        border: 1px solid var(--border-color); /* Dashed border */
+        color: var(--accent-secondary); 
+        border: 1px solid var(--border-color); 
         border-radius: 6px;
         font-weight: bold;
         cursor: pointer;
@@ -108,18 +114,16 @@
     }
 
     .add-btn:hover {
-        background-color: rgba(22, 163, 74, 0.05); /* Subtle green background on hover */
+        background-color: rgba(22, 163, 74, 0.05); 
         border-color: var(--accent-secondary);
     }
     
-    /* Your existing styles for the tags are preserved */
     .skill-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
-        margin-bottom: 1rem; /* Added space above the input */
+        margin-bottom: 1rem;
     }
-
     .skill-tag {
         background-color: var(--background-main);
         color: var(--text-primary);
@@ -132,7 +136,6 @@
         gap: 0.4rem;
         cursor: move;
     }
-
     .delete-tag {
         background: var(--text-secondary);
         color: var(--background-sidebar);
@@ -149,3 +152,4 @@
         font-weight: bold;
     }
 </style>
+
