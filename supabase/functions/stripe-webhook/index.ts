@@ -31,14 +31,16 @@ serve(async (req) => {
 
   // Verify webhook signature (uses STRIPE_WEBHOOK_SECRET from secrets)
   try {
+    console.log('Webhook Received: Verifying signature...');
     event = await stripe.webhooks.constructEventAsync(
       body,
       signature!,
       Deno.env.get('STRIPE_WEBHOOK_SECRET')!
     )
+    console.log(`Webhook Verified. Event type: ${event.type}`);
   } catch (err) {
     console.error(`Webhook signature verification failed: ${err.message}`)
-    return new Response(err.message, { status: 400 })
+    return new Response(`Webhook signature error: ${err.message}`, { status: 400 })
   }
 
   // Handle successful payment event
@@ -46,15 +48,17 @@ serve(async (req) => {
     const session = event.data.object as Stripe.Checkout.Session;
 
     // IMPORTANT: Get the Supabase User ID passed via client_reference_id
-    // This MUST be passed when creating the Stripe Payment Link
     const userId = session.client_reference_id;
+
+    console.log(`Checkout session completed. client_reference_id: ${userId}`);
 
     if (!userId) {
       console.error('Webhook Error: Missing client_reference_id (User ID) in checkout session.');
+      // Return 400 - tell Stripe something is wrong with the data received
       return new Response('Webhook Error: Missing client_reference_id', { status: 400 })
     }
 
-    console.log(`Checkout session completed for user: ${userId}`);
+    console.log(`Attempting to add ${CREDITS_TO_ADD} credits for user: ${userId}`);
 
     // Add credits using the database function
     try {
@@ -62,19 +66,27 @@ serve(async (req) => {
         user_id_param: userId,
         credits_to_add: CREDITS_TO_ADD
       });
-      if (rpcError) throw rpcError; // Throw error to be caught below
-      console.log(`Successfully added ${CREDITS_TO_ADD} credits to user ${userId}`);
+
+      if (rpcError) {
+         console.error('RPC function call failed:', rpcError);
+         throw rpcError; // Throw error to be caught below
+      } else {
+         console.log(`RPC call successful for user ${userId}. Credits should be added.`);
+      }
+
     } catch (dbError) {
-      console.error('Error calling add_user_credits RPC:', dbError);
+      console.error('Error during RPC call:', dbError);
+      // Return 500 - tell Stripe there was a server-side problem
       return new Response(`Webhook handler database error: ${dbError.message}`, { status: 500 });
     }
   } else {
-    console.log(`Unhandled event type received: ${event.type}`);
+    console.log(`Skipping unhandled event type: ${event.type}`);
   }
 
   // Acknowledge receipt of the event to Stripe
+  console.log('Webhook processing finished successfully.');
   return new Response(JSON.stringify({ received: true }), {
      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-     status: 200
+     status: 200 // IMPORTANT: Return 200 OK to Stripe
   })
 })

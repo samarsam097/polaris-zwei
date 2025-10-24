@@ -105,7 +105,7 @@
 	<div class="hero-layout">
 		<div class="hero-content">
 			<h1>Build Your Professional Resume, Easily</h1>
-			<p>Folio.ai simplifies creating, updating, and downloading ATS-friendly resumes that stand out.</p>
+			<p>Resu.ninja simplifies creating, updating, and downloading ATS-friendly resumes that stand out.</p>
 
 			<div class="hero-actions">
 				{#if $page.data.session}
@@ -151,7 +151,7 @@
 
 <section id="features" class="page-section">
 	<div class="section-content">
-		<h2>Why Choose Folio.ai?</h2>
+		<h2>Why Choose Resu.ninja?</h2>
 		<p class="subtitle">Everything you need to create the perfect resume.</p>
 		<div class="features-grid">
 			<div class="feature-card"><h3>ATS-Friendly Templates</h3><p>Get past the automated filters...</p></div>

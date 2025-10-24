@@ -1,8 +1,8 @@
 <footer class="footer">
 	<div class="footer-content">
 		<div class="footer-left">
-			<a href="/" class="footer-logo"><strong>Folio</strong>.ai</a>
-			<p>&copy; {new Date().getFullYear()} Folio.ai. All rights reserved.</p>
+			<a href="/" class="footer-logo"><strong>Resu</strong>.ninja</a>
+			<p>&copy; {new Date().getFullYear()} Resu.ninja. All rights reserved.</p>
 		</div>
 		<div class="footer-right">
 			<div class="footer-links">

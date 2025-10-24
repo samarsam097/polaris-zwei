@@ -1,7 +1,7 @@
 <script lang="ts">
 	// SvelteKit Imports
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation'; // <-- Make sure goto is imported
+	import { goto, invalidateAll } from '$app/navigation'; // <-- invalidateAll needed here
 	import { get } from 'svelte/store';
 
 	// Data Store
@@ -13,7 +13,6 @@
 	import LoginModal from '$lib/components/ui/LoginModal.svelte';
 	import SignUpModal from '$lib/components/ui/SignUpModal.svelte';
 	import ForgotPasswordModal from '$lib/components/ui/ForgotPasswordModal.svelte';
-	// --- ADDED CreditCard ICON ---
 	import { Save, Download, Menu, X, Palette, FileJson, CreditCard } from 'svelte-lucide';
 
 	// PDF Generation Libraries
@@ -34,6 +33,12 @@
 	$: profile = $page.data.profile; // Access profile data from layout
 	$: currentCredits = profile?.credits ?? 0; // Get credits, default to 0
 
+	$: {
+   // Log the whole data object
+  console.log('Navbar extracted profile:', profile);      // Log the extracted profile
+  console.log('Navbar currentCredits updated:', currentCredits); // Log the credits
+}
+
 	// --- CONTEXT-AWARE UI LOGIC ---
 	$: isBuilderPage = $page.url.pathname.startsWith('/resume/');
 	$: logoHref = isBuilderPage ? '/dashboard' : '/';
@@ -43,45 +48,19 @@
 	const closeMobileMenu = () => isMobileMenuOpen = false;
 
 	// --- AUTHENTICATION & MODAL FUNCTIONS ---
-	function openSignUpModal() {
-		closeMobileMenu(); isLoginModalOpen = false; isForgotPasswordModalOpen = false; isSignUpModalOpen = true;
-	}
-	function openForgotPasswordModal() {
-		isLoginModalOpen = false; isSignUpModalOpen = false; isForgotPasswordModalOpen = true;
-	}
-	async function handlePasswordReset(event: CustomEvent) {
-		const { email } = event.detail; const { supabase } = $page.data;
-		const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/` });
-		if (error) { throw error; }
-	}
-	async function loginWithGoogle() {
-		closeMobileMenu(); const { supabase } = $page.data;
-		await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${location.origin}/auth/callback` } });
-	}
-	async function handleEmailSignUp(event: CustomEvent) {
-		const { name, email, password } = event.detail; const { supabase } = $page.data;
-		const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
-		if (error) { alert(error.message); } else { alert('Account created! Check email.'); isSignUpModalOpen = false; }
-	}
-	async function handleEmailSignIn(event: CustomEvent) {
-		const { email, password } = event.detail; const { supabase } = $page.data;
-		const { error } = await supabase.auth.signInWithPassword({ email, password });
-		if (error) { alert(error.message); } else { isLoginModalOpen = false; closeMobileMenu(); goto('/dashboard'); }
-	}
-	async function signOut() {
-		const { supabase } = $page.data; if (supabase) { await supabase.auth.signOut(); }
-		isMenuOpen = false; closeMobileMenu(); await goto('/', { invalidateAll: true });
-	}
+	function openSignUpModal() { closeMobileMenu(); isLoginModalOpen = false; isForgotPasswordModalOpen = false; isSignUpModalOpen = true; }
+	function openForgotPasswordModal() { isLoginModalOpen = false; isSignUpModalOpen = false; isForgotPasswordModalOpen = true; }
+	async function handlePasswordReset(event: CustomEvent) { const { email } = event.detail; const { supabase } = $page.data; const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/` }); if (error) { throw error; } }
+	async function loginWithGoogle() { closeMobileMenu(); const { supabase } = $page.data; await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${location.origin}/auth/callback` } }); }
+	async function handleEmailSignUp(event: CustomEvent) { const { name, email, password } = event.detail; const { supabase } = $page.data; const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } }); if (error) { alert(error.message); } else { alert('Account created! Check email.'); isSignUpModalOpen = false; } }
+	async function handleEmailSignIn(event: CustomEvent) { const { email, password } = event.detail; const { supabase } = $page.data; const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) { alert(error.message); } else { isLoginModalOpen = false; closeMobileMenu(); goto('/dashboard'); } }
+	async function signOut() { const { supabase } = $page.data; if (supabase) { await supabase.auth.signOut(); } isMenuOpen = false; closeMobileMenu(); await goto('/', { invalidateAll: true }); }
 	function openSettings() { isMenuOpen = false; closeMobileMenu(); isSettingsModalOpen = true; }
-	async function handleDeleteAccount() {
-		const response = await fetch('/api/delete-account', { method: 'POST' });
-		if (response.ok) { alert('Account deleted.'); await goto('/', { invalidateAll: true }); } else { alert('Failed to delete account.'); }
-		isSettingsModalOpen = false;
-	}
+	async function handleDeleteAccount() { const response = await fetch('/api/delete-account', { method: 'POST' }); if (response.ok) { alert('Account deleted.'); await goto('/', { invalidateAll: true }); } else { alert('Failed to delete account.'); } isSettingsModalOpen = false; }
+
 
 	// --- RESUME ACTION FUNCTIONS ---
 	async function saveResume() {
-		// (This function remains unchanged from your provided code)
 		if (isSaving || !isBuilderPage) return; const resumeId = $page.params.id; const { supabase } = $page.data; if (!resumeId || !supabase) return;
 		isSaving = true;
 		try {
@@ -92,79 +71,121 @@
 		finally { setTimeout(() => (isSaving = false), 1000); }
 	}
 
-	// --- NEW DOWNLOAD WRAPPER ---
-	async function handleDownloadAttempt(downloadType: 'pdf' | 'json') {
-		const { supabase, session } = $page.data;
+	// --- DOWNLOAD WRAPPER (with invalidateAll) ---
+	// --- DOWNLOAD WRAPPER (with invalidateAll & session refresh) ---
+    async function handleDownloadAttempt(downloadType: 'pdf' | 'json') {
+        const { supabase, session: initialSession } = $page.data; // Get initial session
 
-		if (!session?.user?.id) {
-			alert('Please log in to download.');
-			isLoginModalOpen = true;
-			return;
-		}
+        // Check initial session existence first
+        if (!initialSession?.user?.id) {
+            alert('Please log in to download.');
+            isLoginModalOpen = true;
+            return;
+        }
 
-		// 1. Check Credits
-		if (currentCredits <= 0) {
-			alert('You need credits to download. Please purchase more.');
-			const userId = session.user.id;
-			const basePaymentLink = 'YOUR_STRIPE_PAYMENT_LINK_URL_HERE'; // <-- REPLACE THIS!
-			// Append client_reference_id for the webhook
-			const redirectUrl = `${basePaymentLink}?client_reference_id=${userId}`;
-			window.location.href = redirectUrl;
-			return;
-		}
+        // --- Explicitly Refresh Session ---
+        // This ensures we have the latest access token before checking credits/invoking
+        console.log('Refreshing session before download attempt...');
+        const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
+        
+        if (sessionError || !session?.access_token) {
+            console.error("Error refreshing session or no access token:", sessionError);
+            alert("Could not verify your session. Please log in again.");
+            // Optional: Force sign out or redirect to login
+            // await signOut(); 
+            isLoginModalOpen = true;
+            return;
+        }
+        console.log('Session refreshed successfully.');
+        
+        // --- Re-fetch profile with potentially new session data ---
+        // This is important because currentCredits might be stale if the initial load used an old session
+        let refreshedProfile = null;
+        let refreshedCredits = 0;
+        const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('credits')
+            .eq('id', session.user.id)
+            .maybeSingle();
 
-		if (isDownloading) return; // Prevent double clicks
-		isDownloading = true;
+        if (profileError) {
+             console.error("Error fetching profile after session refresh:", profileError);
+             alert("Could not fetch current credit balance.");
+             // Don't proceed without knowing credits
+             return; 
+        } else {
+             refreshedProfile = profileData;
+             refreshedCredits = refreshedProfile?.credits ?? 0;
+             console.log("Refreshed credits:", refreshedCredits);
+        }
+        
+        // --- END SESSION REFRESH ---
 
-		// 2. Attempt to Decrement Credits via Edge Function
-		try {
-			// Get the auth token to pass to the function
-			const token = session.access_token;
-			const { data, error } = await supabase.functions.invoke('decrement-credits', {
-				headers: { Authorization: `Bearer ${token}` } // Pass auth token
-			});
 
-			if (error || !data?.success) {
-				if (error?.message?.includes('Insufficient credits') || data?.error?.includes('Insufficient credits') || (error as any)?.context?.status === 402) {
-					alert('Download failed: Insufficient credits. Please purchase more.');
-					const userId = session.user.id;
-					const basePaymentLink = 'https://buy.stripe.com/test_14A7sEbTw4kt4429GPgnK00'; // <-- REPLACE THIS!
-					const redirectUrl = `${basePaymentLink}?client_reference_id=${userId}`;
-					window.location.href = redirectUrl;
-				} else {
-					throw new Error(error?.message || data?.error || "Failed to update credits. Please try again.");
-				}
-				isDownloading = false;
-				return; // Stop if decrement failed
-			}
+        // 1. Check Credits (Use refreshedCredits)
+        if (refreshedCredits < 20) {
+            alert('You need at least 20 credits to download. Please purchase more.');
+            const userId = session.user.id;
+            const basePaymentLink = 'https://buy.stripe.com/test_00w6oA0aO18h9omcT1gnK01'; // <-- REPLACE THIS!
+            const redirectUrl = `${basePaymentLink}?client_reference_id=${userId}`;
+            window.location.href = redirectUrl;
+            return;
+        }
 
-			// 3. Decrement Succeeded - Proceed with Download
-			console.log('Credits decremented successfully.');
-			// Manually update local credit count for immediate feedback
-            // This relies on the profile object being loaded and reactive
-            if ($page.data.profile) {
-                // Create a temporary mutable copy if needed, or update store if using one
-                 $page.data.profile.credits = Math.max(0, $page.data.profile.credits - 1);
+        if (isDownloading) return;
+        isDownloading = true;
+
+        // 2. Attempt to Decrement Credits via Edge Function (Use refreshed token)
+        try {
+            const token = session.access_token; // Use the newly refreshed token
+			console.log('Refreshed Session Object:', session);
+        console.log('Access Token being sent:', token);
+        if (!token) {
+            throw new Error("Token is null or undefined after session refresh!");
+        }
+            console.log('Attempting to call decrement-credits function with refreshed token...');
+            const { data, error } = await supabase.functions.invoke('decrement-credits', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            console.log('Decrement function returned:', { data, error });
+
+            if (error || !data?.success) {
+                // ... (error handling and redirect logic as before) ...
+                const isInsufficientCreditsError = (error as any)?.context?.status === 402 || data?.error?.includes('Insufficient credits');
+                 if (isInsufficientCreditsError) {
+                    alert('Download failed: Insufficient credits. Please purchase more.');
+                    const userId = session.user.id;
+                    const basePaymentLink = 'https://buy.stripe.com/test_00w6oA0aO18h9omcT1gnK01'; // <-- REPLACE THIS!
+                    const redirectUrl = `${basePaymentLink}?client_reference_id=${userId}`;
+                    window.location.href = redirectUrl;
+                } else {
+                    throw new Error(error?.message || data?.error || "Failed to update credits. Please try again.");
+                }
+                isDownloading = false;
+                return; // Stop if decrement failed
             }
 
+            // 3. Decrement Succeeded - Invalidate data & Proceed
+            console.log('Credits decremented successfully via function.');
+            await invalidateAll(); // Re-run load to get latest data everywhere
+            console.log('invalidateAll finished.');
 
-			if (downloadType === 'pdf') {
-				await downloadPDFInternal(); // Call actual PDF logic
-			} else if (downloadType === 'json') {
-				downloadJSONInternal(); // Call actual JSON logic
-			}
+            if (downloadType === 'pdf') {
+                await downloadPDFInternal();
+            } else if (downloadType === 'json') {
+                downloadJSONInternal();
+            }
 
-		} catch (error: any) {
-			console.error("Download/Decrement error:", error);
-			alert(`Error: ${error.message}`);
-			isDownloading = false; // Ensure loading state is reset on error
-		}
-		// finally block moved inside the specific download functions now
-	}
+        } catch (error: any) {
+            console.error("Download/Decrement error:", error);
+            console.log("Error occurred within handleDownloadAttempt try block:", error.message);
+            alert(`Error during download: ${error.message}`);
+            isDownloading = false;
+        }
+    }
 
-	// --- Internal download functions (original logic moved here) ---
+	// --- Internal download functions (unchanged) ---
 	async function downloadPDFInternal() {
-		// (This function remains unchanged from your provided code)
 		const element = document.getElementById('resume-preview-paper');
 		if (!element) { alert('Preview not found!'); isDownloading = false; return; }
 		const originalWidth = element.style.width; const originalMaxWidth = element.style.maxWidth;
@@ -177,9 +198,7 @@
 		} catch (error: any) { console.error('PDF Error:', error); alert(`PDF Error: ${error.message}`); }
 		finally { element.style.width = originalWidth; element.style.maxWidth = originalMaxWidth; isDownloading = false; }
 	}
-
 	function downloadJSONInternal() {
-		// (This function remains unchanged from your provided code)
 		try {
 			const currentData = get(resumeData); const baseName = currentData?.basicInfo?.name || 'resume';
 			const filename = `${baseName.replace(/ /g, '_')}_Resume.json`;
@@ -204,10 +223,9 @@
 				<div class="avatar default-avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="user-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></div>
 				<div class="user-details">
 					<div class="username">{($page.data.session.user.user_metadata?.full_name) ? $page.data.session.user.user_metadata.full_name : $page.data.session.user.email}</div>
-					{#if profile}
-						<div class="credit-display-mobile">
-							<CreditCard size={14} /> <span>{currentCredits} Credits</span>
-						</div>
+					{#if profile !== null} <div class="credit-display-mobile">
+						<CreditCard size={14} /> <span>{currentCredits} Credits</span>
+					</div>
 					{/if}
 				</div>
 			</div>
@@ -230,7 +248,7 @@
 <nav class="navbar">
 	<div class="nav-content">
 		<div class="nav-left">
-			<a href={logoHref} class="logo"><strong>Folio</strong>.ai</a>
+			<a href={logoHref} class="logo"><strong>Resu</strong>.ninja</a>
 			{#if isBuilderPage}
 				<div class="separator"></div>
 				<div class="builder-actions">
@@ -252,10 +270,9 @@
 		<div class="nav-right">
 			<div class="desktop-nav">
 				{#if $page.data.session}
-					{#if profile}
-						<div class="credit-display-desktop">
-							<CreditCard size={16} /> <span>{currentCredits} Credits</span>
-						</div>
+					{#if profile !== null} <div class="credit-display-desktop">
+						<CreditCard size={16} /> <span>{currentCredits} Credits</span>
+					</div>
 					{/if}
 					<div class="profile-menu">
 						<button class="avatar-button avatar-with-name" aria-label="Open profile menu" on:click={() => (isMenuOpen = !isMenuOpen)}>
@@ -283,7 +300,7 @@
 </nav>
 
 <style>
-	/* ... Paste your existing styles here ... */
+  /* ... Paste your full existing styles ... */
     .navbar { background-color: var(--background-sidebar); border-bottom: 1px solid var(--border-color); padding: 0 1.5rem; height: 65px; box-sizing: border-box; display: flex; align-items: center; position: sticky; top: 0; z-index: 50; }
     .nav-content { width: 100%; max-width: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
     .nav-left, .nav-right, .builder-actions, .desktop-nav { display: flex; align-items: center; gap: 1.5rem; }
@@ -321,7 +338,7 @@
     .mobile-menu-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
     .mobile-user-info { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; background-color: var(--background-main); border-radius: 8px; margin-bottom: 1rem; }
     .user-details { display: flex; flex-direction: column; }
-	.credit-display-mobile { font-size: 0.8rem; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.1rem;}
+    .credit-display-mobile { font-size: 0.8rem; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.1rem;}
     .mobile-user-info .username { font-weight: 500; color: var(--text-primary); }
     .mobile-link { display: block; width: 100%; padding: 0.75rem 1rem; background: none; border: none; text-align: left; cursor: pointer; font-size: 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 6px; transition: background-color 0.2s, color 0.2s; }
     .mobile-link:hover { background-color: var(--background-main); color: var(--text-primary); }
@@ -331,23 +348,23 @@
     .mobile-button:hover { filter: brightness(90%); }
     .tablet-theme-btn { display: none; }
 
-	/* --- ADDED CREDIT DISPLAY STYLES --- */
-	.credit-display-desktop {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		font-size: 0.85rem;
-		color: var(--text-secondary);
-		background-color: var(--background-input);
-		padding: 0.25rem 0.6rem;
-		border-radius: 4px;
-		border: 1px solid var(--border-color);
-	}
+    /* --- CREDIT DISPLAY STYLES --- */
+    .credit-display-desktop {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        background-color: var(--background-input);
+        padding: 0.25rem 0.6rem;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+    }
 
     @media (max-width: 767px) { /* --- Mobile --- */
         .navbar { padding: 0 1rem; }
         .desktop-nav { display: none; }
-		.credit-display-desktop { display: none; } /* Hide desktop credits */
+        .credit-display-desktop { display: none; } /* Hide desktop credits */
         .hamburger-btn { display: flex; align-items: center; justify-content: center; position: relative; }
         .tablet-theme-btn { display: none; }
         .nav-left { gap: 0.75rem; }
@@ -358,7 +375,7 @@
     }
 
     @media (min-width: 768px) and (max-width: 1199px) { /* --- Tablet --- */
-		.credit-display-mobile { display: none; } /* Hide mobile credits */
+        .credit-display-mobile { display: none; } /* Hide mobile credits */
         .tablet-theme-btn { display: inline-flex; }
         .hamburger-btn { display: none; }
         .desktop-nav { display: flex; }
@@ -368,7 +385,7 @@
     }
 
     @media (min-width: 1200px) { /* --- Desktop --- */
-		.credit-display-mobile { display: none; } /* Hide mobile credits */
+        .credit-display-mobile { display: none; } /* Hide mobile credits */
         .tablet-theme-btn { display: none; }
         .nav-action-btn span { display: inline; }
         .nav-action-btn { padding: 0.5rem 1rem; }
